@@ -1,4 +1,4 @@
-#include "web_server.h"
+/*#include "web_server.h"
 
 WebServerManager::WebServerManager() : servidor(80), dnsServer() { }
 
@@ -47,3 +47,4 @@ void WebServerManager::handleCredentials() {
         servidor.send(400, "text/html", "<html><body><h2>Error: Credenciales no válidas.</h2></body></html>");
     }
 }
+*/

@@ -1,8 +1,6 @@
 #include "wifi_manager.h"
-#include "utils.h"
-#include "web_server.h" // Incluir el header del servidor web
 
-WebServerManager webServerManager; // Declarar el objeto del servidor web
+//WebServerManager webServerManager; // Declarar el objeto del servidor web
 
 WiFiManager::WiFiManager() {
     estadoActual = Estado_Inicializacion;
@@ -12,21 +10,21 @@ void WiFiManager::manejarWiFi() {
     switch (estadoActual) {
         case Estado_Inicializacion:
             iniciarWiFi();
-            if (!cargarCredencialesGuardadas()) {
+            /*if (!cargarCredencialesGuardadas()) {
                 estadoActual = Estado_Modo_AccessPoint;
             } else {
                 estadoActual = Estado_IntentarConexionWiFi;
-            }
+            }*/
             break;
 
         case Estado_IntentarConexionWiFi:
             // Intentar conectar a Wi-Fi usando las credenciales cargadas
-            if (intentarConectar()) {
+            /*if (intentarConectar()) {
                 estadoActual = Estado_MantenerConexionEstablecida;
             } else {
                 estadoActual = Estado_Modo_AccessPoint; // Volver al modo AP si falla
             }
-            break;
+            break;*/
 
         case Estado_MantenerConexionEstablecida:
             mantenerConexion();
@@ -38,7 +36,7 @@ void WiFiManager::manejarWiFi() {
 
         case Estado_Modo_AccessPoint:
             iniciarAccessPoint();
-            estadoActual = Estado_EsperandoConexionAP;
+            //estadoActual = Estado_EsperandoConexionAP;
             break;
 
         case Estado_GuardarCredenciales:
@@ -86,7 +84,7 @@ void WiFiManager::iniciarAccessPoint() {
     WiFi.softAP("ESP32_AccessPoint");
 
     // Iniciar el servidor web embebido y pasarle la callback para manejar las credenciales
-    bool exito = webServerManager.iniciar([this](const char* ssid, const char* password) {
+    /*bool exito = webServerManager.iniciar([this](const char* ssid, const char* password) {
         Serial.println("Credenciales recibidas:");
         Serial.println(ssid);
         Serial.println(password);
@@ -96,11 +94,11 @@ void WiFiManager::iniciarAccessPoint() {
         
         // Cambiar al estado de intentar conectar
         estadoActual = Estado_IntentarConexionWiFi;
-    });
+    });*/
 
-    if (!exito) {
+    /*if (!exito) {
         Serial.println("Error al iniciar el portal cautivo.");
-    }
+    }*/
 
     estadoActual = Estado_GuardarCredenciales;
 }
@@ -117,12 +115,12 @@ void WiFiManager::guardarCredenciales(const char* ssid, const char* password) {
 
 void WiFiManager::cargarCredencialesGuardadas() {
     // Cargar credenciales guardadas de NVS
-    bool found = false;
+    /*bool found = false;
     for (int i = 0; i < MAX_CREDENCIALES; ++i) {
         if (Utils::cargarDato(("ssid_" + String(i)).c_str(), ssids[i], sizeof(ssids[i])) &&
             Utils::cargarDato(("password_" + String(i)).c_str(), passwords[i], sizeof(passwords[i]))) {
             found = true;
         }
     }
-    return found;
+    return found;*/
 }

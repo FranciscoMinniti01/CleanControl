@@ -1,4 +1,4 @@
-// influxdb_client.cpp
+/*// influxdb_client.cpp
 #include "influxdb_client.h"
 
 // Constructor: Inicializa las variables necesarias
@@ -55,3 +55,4 @@ String InfluxDBClient::prepararPayload(const char* data) {
     
     return payload;
 }
+*/

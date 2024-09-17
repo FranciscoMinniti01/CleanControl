@@ -1,6 +1,6 @@
 #ifndef WEB_SERVER_H
 #define WEB_SERVER_H
-
+/*
 #include <WiFi.h>
 #include <WebServer.h>
 #include <DNSServer.h>
@@ -11,7 +11,7 @@ typedef void (*CredencialesCallback)(const char* ssid, const char* password);
 class WebServerManager {
 public:
     WebServerManager();
-    bool iniciar(CredencialesCallback callback);
+    //bool iniciar(CredencialesCallback callback);
     void manejarServidor();
 
 private:
@@ -21,6 +21,6 @@ private:
     CredencialesCallback callbackCredenciales; // Callback para cuando se ingresen las credenciales
     void handleRoot(); // Maneja la solicitud de la página principal
     void handleCredentials(); // Maneja la solicitud de envío de credenciales
-};
+};*/
 
 #endif // WEB_SERVER_H

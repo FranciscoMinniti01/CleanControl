@@ -1,7 +1,7 @@
 // influxdb_client.h
 #ifndef INFLUXDB_CLIENT_H
 #define INFLUXDB_CLIENT_H
-
+/*
 #include <WiFiClient.h>   // Para manejar conexiones HTTP
 #include <HTTPClient.h>   // Para manejar peticiones HTTP
 
@@ -27,5 +27,5 @@ private:
 
     String prepararPayload(const char* data); // Método para preparar el payload en formato line protocol
 };
-
+*/
 #endif // INFLUXDB_CLIENT_H
