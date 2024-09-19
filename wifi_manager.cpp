@@ -1,126 +1,223 @@
 #include "wifi_manager.h"
 
-//WebServerManager webServerManager; // Declarar el objeto del servidor web
+WiFiServer server(80);
 
-WiFiManager::WiFiManager() {
-    estadoActual = Estado_Inicializacion;
+WiFiManager_c::WiFiManager()
+{
+    WifiState = Estado_Inicializacion;
+    WiFi.onEvent(WiFiEventCB);
 }
 
-void WiFiManager::manejarWiFi() {
-    switch (estadoActual) {
-        case Estado_Inicializacion:
-            iniciarWiFi();
-            /*if (!cargarCredencialesGuardadas()) {
-                estadoActual = Estado_Modo_AccessPoint;
-            } else {
-                estadoActual = Estado_IntentarConexionWiFi;
-            }*/
+void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+    #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+    Serial.printf("[WiFi-event] event: %d\n", event);
+    #endif
+
+    switch (event)
+    {
+// GENERAL ----------------------------------------------------------------------------------------------------
+        case ARDUINO_EVENT_WIFI_READY:
+            Serial.println("WIFI_READY");
+            break;
+        case ARDUINO_EVENT_WIFI_SCAN_DONE:
+            Serial.println("Completed scan for access points");
+            break;
+// STATION MODE ----------------------------------------------------------------------------------------------------
+        case ARDUINO_EVENT_WIFI_STA_START:
+            Serial.println("WiFi client started");
+            break;
+        case ARDUINO_EVENT_WIFI_STA_STOP:
+            Serial.println("WiFi clients stopped");
+            break;
+        case ARDUINO_EVENT_WIFI_STA_CONNECTED:
+            Serial.println("Connected to access point");
+            break;
+        case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
+            Serial.println("Disconnected from WiFi access point");
+            break;
+        case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
+            Serial.println("Authentication mode of access point has changed");
+            break;
+        case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+            Serial.print("Obtained IP address: ");
+            Serial.println(WiFi.localIP());
+            break;
+        case ARDUINO_EVENT_WIFI_STA_LOST_IP:
+            Serial.println("Lost IP address and IP address is reset to 0");
+            break;
+        case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
+            Serial.println("STA IPv6 is preferred");
+            break;
+
+// ERRORES CREO ----------------------------------------------------------------------------------------------------
+        
+        case ARDUINO_EVENT_WPS_ER_SUCCESS:
+            Serial.println("WiFi Protected Setup (WPS): succeeded in enrollee mode");
+            break;
+        case ARDUINO_EVENT_WPS_ER_FAILED:
+            Serial.println("WiFi Protected Setup (WPS): failed in enrollee mode");
+            break;
+        case ARDUINO_EVENT_WPS_ER_TIMEOUT:
+            Serial.println("WiFi Protected Setup (WPS): timeout in enrollee mode");
+            break;
+        case ARDUINO_EVENT_WPS_ER_PIN:
+            Serial.println("WiFi Protected Setup (WPS): pin code in enrollee mode");
+            break;
+
+// ACCES POINT MODE ----------------------------------------------------------------------------------------------------
+        
+        case ARDUINO_EVENT_WIFI_AP_START:
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("WiFi access point started");
+            #endif
+            WifiState = WIFI_AP_SERVER_INIT;
+            break;
+
+        case ARDUINO_EVENT_WIFI_AP_STOP:
+            Serial.println("WiFi access point  stopped");
+            break;
+        case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
+            Serial.println("Client connected");
+            break;
+        case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
+            Serial.println("Client disconnected");
+            break;
+        case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
+            Serial.println("Assigned IP address to client");
+            break;
+        case ARDUINO_EVENT_WIFI_AP_PROBEREQRECVED:
+            Serial.println("Received probe request");
+            break;
+        case ARDUINO_EVENT_WIFI_AP_GOT_IP6:
+            Serial.println("AP IPv6 is preferred");
+            break;
+
+        default: break;
+    }
+}
+
+void WiFiManager::WiFiStateMachine()
+{
+    switch (WifiState)
+    {
+        case WIFI_CREDENTIALS_CHECK:
+            if(GetCredentials()) WifiState = WiFi_start_STA
+            else WifiState = WiFi_start_AP
+            break
+
+        case WIFI_AP_INIT:
+            WiFi.mode(WIFI_AP_STA);
+            WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP);
+            Serial.println(WiFi.softAPIP());
+            WifiState = WIFI_AP_WAIT_INIT;
+            break;
+
+        case WIFI_AP_WAIT_INIT
+            break;
+
+        case WIFI_AP_SERVER_INIT
+            server.begin();
+            break;
+          
+        case WIFI_AP_WAIT_CONNECTION
+            WiFiClient client = server.available();
+            if (client) {
+            }
+            break;
+
+        case 
+
+        case WiFi_start_STA
+            WiFi.softAPdisconnect(false);
+            WiFi.mode(WIFI_STA);
+            WiFi.setAutoReconnect(true);
             break;
 
         case Estado_IntentarConexionWiFi:
-            // Intentar conectar a Wi-Fi usando las credenciales cargadas
-            /*if (intentarConectar()) {
-                estadoActual = Estado_MantenerConexionEstablecida;
-            } else {
-                estadoActual = Estado_Modo_AccessPoint; // Volver al modo AP si falla
+            for (int i = 0; i < MAX_CREDENCIALES; ++i)
+            {
+                WiFi.begin(ssids[i], passwords[i]);
+                if (WiFi.waitForConnectResult() == WL_CONNECTED)
+                {
+                    estadoActual = Estado_MantenerConexionEstablecida;
+                    return;
+                }
             }
-            break;*/
+            break;
 
         case Estado_MantenerConexionEstablecida:
-            mantenerConexion();
+            if (WiFi.status() != WL_CONNECTED)
+            {
+                estadoActual = Estado_Intentar_Reconexion;
+            }
             break;
 
         case Estado_Intentar_Reconexion:
-            intentarReconexion();
+            if (WiFi.reconnect())
+            {
+                estadoActual = Estado_MantenerConexionEstablecida;
+            }
+            else
+            {
+                estadoActual = Estado_Modo_AccessPoint;
+            }
             break;
 
         case Estado_Modo_AccessPoint:
             iniciarAccessPoint();
             //estadoActual = Estado_EsperandoConexionAP;
             break;
+    }
+}
 
-        case Estado_GuardarCredenciales:
-            // Procesar para guardar credenciales del portal cautivo
-            guardarCredenciales("nuevo_ssid", "nueva_password");
-            estadoActual = Estado_IntentarConexionWiFi;
+bool WiFiManager::GetCredentials()
+{
+    bool err = false;
+
+    for (int i = 0; i < MAX_CREDENCIALES; ++i)
+    {
+        ssids[i] = NULL;
+        passwords[i] = NULL;
+    }
+
+    for (int i = 0; i < MAX_CREDENCIALES; ++i)
+    {
+        if(!GetData(WIFI_NAME_SPACE, WIFI_KEY_SSID+std::to_string(i) , ssids[i], sizeof(ssids[i])))
+        {
             break;
-    }
-}
-
-void WiFiManager::iniciarWiFi() {
-    WiFi.mode(WIFI_STA);
-}
-
-void WiFiManager::intentarConexion() {
-    // Intentar conectarse a WiFi con las credenciales
-    for (int i = 0; i < MAX_CREDENCIALES; ++i) {
-        WiFi.begin(ssids[i], passwords[i]);
-        if (WiFi.waitForConnectResult() == WL_CONNECTED) {
-            estadoActual = Estado_MantenerConexionEstablecida;
-            return;
         }
-    }
-    estadoActual = Estado_Intentar_Reconexion;
-}
-
-void WiFiManager::mantenerConexion() {
-    if (WiFi.status() != WL_CONNECTED) {
-        estadoActual = Estado_Intentar_Reconexion;
-    }
-}
-
-void WiFiManager::intentarReconexion() {
-    if (WiFi.reconnect()) {
-        estadoActual = Estado_MantenerConexionEstablecida;
-    } else {
-        estadoActual = Estado_Modo_AccessPoint;
-    }
-}
-
-void WiFiManager::iniciarAccessPoint() {
-    WiFi.softAP("ESP32_AP", "passwordAP");
-
-        // Configurar el ESP32 en modo Access Point
-    WiFi.softAP("ESP32_AccessPoint");
-
-    // Iniciar el servidor web embebido y pasarle la callback para manejar las credenciales
-    /*bool exito = webServerManager.iniciar([this](const char* ssid, const char* password) {
-        Serial.println("Credenciales recibidas:");
-        Serial.println(ssid);
-        Serial.println(password);
-
-        // Guardar las credenciales recibidas
-        guardarCredenciales(ssid, password);
-        
-        // Cambiar al estado de intentar conectar
-        estadoActual = Estado_IntentarConexionWiFi;
-    });*/
-
-    /*if (!exito) {
-        Serial.println("Error al iniciar el portal cautivo.");
-    }*/
-
-    estadoActual = Estado_GuardarCredenciales;
-}
-
-void WiFiManager::guardarCredenciales(const char* ssid, const char* password) {
-    // Guardar nuevas credenciales en NVS
-    for (int i = 0; i < MAX_CREDENCIALES; ++i) {
-        if (Utils::guardarDato(("ssid_" + String(i)).c_str(), ssids[i], sizeof(ssids[i])) &&
-            Utils::guardarDato(("password_" + String(i)).c_str(), passwords[i], sizeof(passwords[i]))) {
-            continue;
+        if(!GetData(WIFI_NAME_SPACE, WIFI_KEY_PASW+std::to_string(i) , passwords[i], sizeof(passwords[i])))
+        {
+            break;
         }
+        err = true;
     }
+    return err;
 }
 
-void WiFiManager::cargarCredencialesGuardadas() {
-    // Cargar credenciales guardadas de NVS
-    /*bool found = false;
-    for (int i = 0; i < MAX_CREDENCIALES; ++i) {
-        if (Utils::cargarDato(("ssid_" + String(i)).c_str(), ssids[i], sizeof(ssids[i])) &&
-            Utils::cargarDato(("password_" + String(i)).c_str(), passwords[i], sizeof(passwords[i]))) {
-            found = true;
+void WiFiManager::SaveCredentials(const char* ssid, const char* password)
+{
+    bool err = false;
+    for (int i = 0; i < MAX_CREDENCIALES; ++i)
+    {
+        if(ssids[i] != NULL)
+        {
+            if(!PutData(WIFI_NAME_SPACE, WIFI_KEY_SSID+std::to_string(i) , ssids[i], sizeof(ssids[i])))
+            {
+                break;
+            }
         }
+        if(passwords[i] != NULL)
+        {
+            if(!PutData(WIFI_NAME_SPACE, WIFI_KEY_PASW+std::to_string(i) , passwords[i], sizeof(passwords[i])))
+            {
+                break;
+            }
+        }
+        err = true;
     }
-    return found;*/
+    return err;
 }
+
+

@@ -2,16 +2,29 @@
 
 Preferences preferences;
 
-bool Utils::guardarDato(const char* key, const void* value, const size_t length) {
-    preferences.begin("storage", false); // "storage" es el espacio de nombres para guardar los datos
-    bool resultado = preferences.putBytes(key, value, length); // Guardar el dato en NVS
-    preferences.end();
-    return resultado;
+bool init_utils()
+{
+
 }
 
-bool Utils::cargarDato(const char* key, void* value, const size_t length) {
-    preferences.begin("storage", true); // "storage" es el espacio de nombres para cargar los datos
-    size_t bytesLeidos = preferences.getBytes(key, value, length); // Cargar el dato de NVS
+bool ClearSpace(const char* name)
+{
+    preferences.begin(name,false);
+    return preferences.clear()
+}
+
+bool PutData(const char* name, const char* key, const void* value, const size_t len)
+{
+    if( !preferences.begin(name,false) )             return false;
+    if( preferences.putBytes(key, value, len) == 0)  return false;
     preferences.end();
-    return (bytesLeidos > 0);
+    return true;
+}
+
+bool GetData(const char* name, const char* key, const void* value, const size_t len)
+{
+    if( !preferences.begin(name,false) )             return false;
+    if( preferences.getBytes(key, value, len) == 0)  return false;
+    preferences.end();
+    return true
 }
