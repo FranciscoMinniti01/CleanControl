@@ -2,18 +2,13 @@
 
 Preferences preferences;
 
-bool init_utils()
-{
-
-}
-
 bool ClearSpace(const char* name)
 {
     preferences.begin(name,false);
-    return preferences.clear()
+    return preferences.clear();
 }
 
-bool PutData(const char* name, const char* key, const void* value, const size_t len)
+bool PutData(const char* name, const char* key, void* value, const size_t len)
 {
     if( !preferences.begin(name,false) )             return false;
     if( preferences.putBytes(key, value, len) == 0)  return false;
@@ -21,10 +16,10 @@ bool PutData(const char* name, const char* key, const void* value, const size_t 
     return true;
 }
 
-bool GetData(const char* name, const char* key, const void* value, const size_t len)
+bool GetData(const char* name, const char* key, void* value, const size_t len)
 {
     if( !preferences.begin(name,false) )             return false;
     if( preferences.getBytes(key, value, len) == 0)  return false;
     preferences.end();
-    return true
+    return true;
 }

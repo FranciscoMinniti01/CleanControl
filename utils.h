@@ -3,9 +3,8 @@
 
 #include <Preferences.h>
 
-bool init_utils();
-bool CreatSpace(const char* name, const size_t length);
-bool guardarDato(const char* key, const void* value, const size_t length);
-bool cargarDato(const char* key, const void* value, const size_t length);
+bool ClearSpace(const char* name);
+bool PutData(const char* name, const char* key, void* value, const size_t len);
+bool GetData(const char* name, const char* key, void* value, const size_t len);
 
 #endif // UTILS_H

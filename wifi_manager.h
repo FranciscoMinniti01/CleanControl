@@ -5,12 +5,9 @@
 #include <string>
 
 #include "utils.h"
-#include "web_server.h"
 #include "config.h"
 
 //----------------------------------------------------------------------------------------------------
-
-#define DEBUG_WIFI
 
 #define WIFI_NAME_SPACE "wifi"
 #define WIFI_KEY_PASW   "pasw_"
@@ -18,7 +15,27 @@
 
 //----------------------------------------------------------------------------------------------------
 
-void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
+#define DEBUG_WIFI
+
+// CONFIG ACCESS POINT ----------------------------------------------------------------------------------------------------
+
+#define CHANNEL_AP        1
+#define SSID_HIDDEN_AP    0
+
+#define LOCAL_IP_1 192
+#define LOCAL_IP_2 168
+#define LOCAL_IP_3 4
+#define LOCAL_IP_4 1
+
+#define GATEWAY_IP_1 192
+#define GATEWAY_IP_2 168
+#define GATEWAY_IP_3 4
+#define GATEWAY_IP_4 1
+
+#define SUBNET_IP_1 255
+#define SUBNET_IP_2 255
+#define SUBNET_IP_3 255
+#define SUBNET_IP_4 0
 
 //----------------------------------------------------------------------------------------------------
 
@@ -30,17 +47,15 @@ enum StateWifiManager
     WIFI_AP_SERVER_INIT,
     WIFI_AP_WAIT_CONNECTION,
     WIFI_AP_DISCONNECTION,
-    
 
-
-    WiFi_state_STA
+    WIFI_STA_INIT
 };
 
 class WiFiManager_c
 {
     public:
-        WiFiManager();
-        void WiFiStateMachine()
+        void WiFiManager();
+        void WiFiStateMachine();
 
     private:
         StateWifiManager WifiState;
@@ -52,8 +67,11 @@ class WiFiManager_c
         void guardarCredenciales(const char* ssid, const char* password);
         void cargarCredencialesGuardadas();
 
-        bool GetCredentials()
-        void SaveCredentials(const char* ssid, const char* password)
+        bool GetCredentials();
+        bool SaveCredentials(const char* ssid, const char* password);
+
+        void WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info);
+        void ServerManager();
 };
 
 #endif // WIFI_MANAGER_H
