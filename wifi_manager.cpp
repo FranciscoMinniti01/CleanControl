@@ -6,14 +6,17 @@ IPAddress local_ip_AP(LOCAL_IP_1, LOCAL_IP_2, LOCAL_IP_3, LOCAL_IP_4);
 IPAddress gateway_AP(GATEWAY_IP_1, GATEWAY_IP_2, GATEWAY_IP_3, GATEWAY_IP_4);
 IPAddress subnet_AP(SUBNET_IP_1, SUBNET_IP_2, SUBNET_IP_3, SUBNET_IP_4);
 
-void WiFiManager_c::WiFiManager(){
+void WiFiManager_c::WiFiManager()
+{
     WifiState = WIFI_CREDENTIALS_CHECK;
+
     WiFi.onEvent( [this](WiFiEvent_t event, WiFiEventInfo_t info){
-                      this->WiFiEventCB(event, info); // Llamamos al método no estático usando 'this' y pasando los parámetros
+                      this->WiFiEventCB(event, info);
                       #if !defined(DEBUG) && !defined(DEBUG_WIFI)
                       Serial.printf("[WiFi-event] event: %d\n", event);
                       #endif
                   });
+
     for (int i = 0; i < MAX_CREDENCIALES; i++) {
         ssids[i][0] = '\0';
         passwords[i][0] = '\0';
@@ -111,8 +114,16 @@ void WiFiManager_c::WiFiStateMachine()
     {
         case WIFI_CREDENTIALS_CHECK:
             Serial.println("\n\n\n\n\n WIFI_CREDENTIALS_CHECK");
-            if(GetCredentials()) WifiState = WIFI_STA_INIT;
-            else WifiState = WIFI_AP_INIT;
+
+            if(!nsv_PrepareSpace(WIFI_NAME_SPACE))
+            {
+                Serial.println("FALLO HABRIR EL ESPACIO");
+            }
+
+            if(GetCredentials()){
+                WifiState = WIFI_STA_INIT;
+                //nsv_CloseSpace();
+            }else WifiState = WIFI_AP_INIT;
             break;
 
         case WIFI_AP_INIT:
@@ -147,6 +158,7 @@ void WiFiManager_c::WiFiStateMachine()
                 Serial.println("SSID " + String(i) + ": " + ssidString);
                 Serial.println("Password " + String(i) + ": " + passwordString);
             }
+            nsv_CloseSpace();
             WifiState = WIFI_STA_INIT_;
             /*WiFi.softAPdisconnect(false);
             WiFi.mode(WIFI_STA);
@@ -247,6 +259,10 @@ void WiFiManager_c::ServerManager()
 bool WiFiManager_c::GetCredentials(){
     bool err = false;
 
+    /*if(!nsv_PrepareSpace(WIFI_NAME_SPACE))
+    {
+        return err;
+    }*/
     Serial.println("DEBUG: GetCredentials");
 
     for (int i = 0; i < MAX_CREDENCIALES; ++i)
@@ -257,13 +273,13 @@ bool WiFiManager_c::GetCredentials(){
 
     for (int i = 0; i < MAX_CREDENCIALES; ++i)
     {
-        if(!GetData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , ssids[i], sizeof(ssids[i])))
+        if(!nsv_GetData( (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , ssids[i], sizeof(ssids[i])))
         {
             Serial.print("DEBUG: No se obtubo ssid:");
             Serial.println(i);
             break;
         }
-        if(!GetData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , passwords[i], sizeof(passwords[i])))
+        if(!nsv_GetData( (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , passwords[i], sizeof(passwords[i])))
         {
             Serial.print("DEBUG: No se obtubo password:");
             Serial.println(i);
@@ -272,25 +288,33 @@ bool WiFiManager_c::GetCredentials(){
         Serial.println("DEBUG: se obtuvo almenos una credencial");
         err = true;
     }
+
+    //nsv_CloseSpace();
     return err;
 }
 
 bool WiFiManager_c::SaveCredentials()
 {
     bool err = false;
+
+    /*if(!nsv_PrepareSpace(WIFI_NAME_SPACE))
+    {
+        return err;
+    }*/
+
     Serial.println("DEBUG: SaveCredentials");
 
     for (int i = 0; i < MAX_CREDENCIALES; ++i)
     {
         if(ssids[i][0] != '\0' && passwords[i][0] != '\0')
         {
-            if(!PutData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , static_cast<void*>(ssids[i]) , sizeof(ssids[i])))
+            if(!nsv_PutData( (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , static_cast<void*>(ssids[i]) , sizeof(ssids[i])))
             {
                 Serial.print("DEBUG: No se guaardo ssid:");
                 Serial.println(i);
                 break;
             }
-            if(!PutData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , static_cast<void*>(passwords[i]) , sizeof(passwords[i])))
+            if(!nsv_PutData( (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , static_cast<void*>(passwords[i]) , sizeof(passwords[i])))
             {
                 Serial.print("DEBUG: No se guaardo password:");
                 Serial.println(i);
@@ -300,6 +324,8 @@ bool WiFiManager_c::SaveCredentials()
             err = true;
         } else Serial.println("DEBUG: no se guardo ninguna credencial");
     }
+
+    //nsv_CloseSpace();
     return err;
 }
 

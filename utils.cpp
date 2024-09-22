@@ -2,21 +2,24 @@
 
 Preferences preferences;
 
-void init_utils(const char* name)
+bool nsv_PrepareSpace(const char* name)
 {
-    if(!preferences.begin("credentials") )
+    if(!preferences.begin(name) )
     {
-        Serial.println("DEBUG: begin failed");
+        #if !defined(DEBUG) && !defined(DEBUG_UTILS)
+        Serial.println("DEBUG: open space failed");
+        #endif
+        return false;
     }
+    return true;
 }
 
-bool ClearSpace(const char* name)
+bool nsv_CloseSpace()
 {
-    preferences.begin(name,false);
-    return preferences.clear();
+    preferences.end();
 }
 
-bool PutData(const char* name, const char* key, void* value, const size_t len)
+bool nsv_PutData(const char* key, void* value, const size_t len)
 {
     Serial.print("PutData free entries:");
     Serial.println(preferences.freeEntries());
@@ -33,7 +36,7 @@ bool PutData(const char* name, const char* key, void* value, const size_t len)
     return true;
 }
 
-bool GetData(const char* name, const char* key, void* value, const size_t len)
+bool nsv_GetData(const char* key, void* value, const size_t len)
 {
     //if( !preferences.begin(name,false) )             return false;
     if( preferences.getBytes(key, value, len) == 0)  return false;

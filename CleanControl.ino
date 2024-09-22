@@ -1,69 +1,54 @@
-#include "wifi_manager.h"      // Incluimos el módulo de Wi-Fi
+//#include "wifi_manager.h"
 #include "utils.h"
+//#include <Preferences.h>
 
-//#include "web_server.h"        // Incluimos el servidor web (portal cautivo)
-//#include "influxdb_client.h"   // Incluimos el cliente para enviar datos a InfluxDB
+////WiFiManager_c wifimanager;
 
-// Definimos constantes y variables globales
-//const char* INFLUXDB_URL = "http://your-influxdb-server.com";
-//const char* INFLUXDB_ORG = "your-org";
-//const char* INFLUXDB_BUCKET = "your-bucket";
-//const char* INFLUXDB_TOKEN = "your-token";
-
-//InfluxDBClient influxClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
-
-//bool conexionEstablecida = false;
-//unsigned long tiempoFuncionamientoMotor = 0;  // Dato que queremos enviar a InfluxDB
-//unsigned long ultimoEnvio = 0;
-//const unsigned long intervaloEnvio = 60000;  // Enviar datos cada 60 segundos
-
-WiFiManager_c wifimanager;
+//Preferences preferencess;
 
 char ssids[3][30];
 bool i = true;
 
 void setup() {
   Serial.begin(115200);
-  init_utils("wifi");
-  
-  // Configuramos el cliente de InfluxDB
-  //influxClient.setDeviceID("ESP32_001");  // Asignamos un ID al dispositivo
-  //influxClient.setLocation("Factory A");  // Asignamos una ubicación
-
-  // Inicializamos el módulo de Wi-Fi
+  Serial.println("TEST");
 }
 
-void loop()
+void looop()
 {
-    wifimanager.WiFiStateMachine();
-    /*if(i)
+    //wifimanager.WiFiStateMachine();
+    nsv_PrepareSpace("credentials");
+    if(i)
     {
       strcpy(ssids[0], "Francisco");
+      strcpy(ssids[1], "Francis");
+      strcpy(ssids[2], "Fran");
       for (int i = 0; i < 3; i++) {
           String ssidString = String(ssids[i]);
           Serial.println("SSID " + String(i) + ": " + ssidString);
       }
-      PutData("wifi", "ssid", static_cast<void*>(ssids[1]) , sizeof(ssids[1]) );
+      nsv_PutData("ssid", static_cast<void*>(ssids[1]) , sizeof(ssids[1]) );
       i = false;
-    }    */
+      nsv_CloseSpace();
+    }
 }
 
-// Callback que se llama cuando se reciben credenciales del portal cautivo
-/*void onCredencialesRecibidas(const char* ssid, const char* password) {
-  // Guardamos las credenciales
-  strcpy(credencialesSSID[0], ssid);
-  strcpy(credencialesPassword[0], password);
-  estadoActual = Estado_GuardarCredenciales;  // Cambiamos el estado para guardar credenciales
+/*void loop(){
+    if( i ){
+        if( !preferencess.begin("credentials") )  Serial.println("DEBUG: open space failed");
+        strcpy(ssids[0], "Francisco");
+        strcpy(ssids[1], "Francis");
+        strcpy(ssids[2], "Fran");
+        for (int i = 0; i < 3; i++) {
+            String ssidString = String(ssids[i]);
+            Serial.println("SSID " + String(i) + ": " + ssidString);
+        }
+        if( preferencess.putBytes("ssid", static_cast<void*>(ssids[1]) , sizeof(ssids[1]) ) == 0){
+        Serial.println("DEBUG: putBytes failed");   } 
+        i = false;
+        preferencess.end();
+    }
 }*/
 
-// Función para enviar datos a InfluxDB
-/*void enviarDatosInfluxDB() {
-  String data = String(tiempoFuncionamientoMotor);  // Ejemplo de dato a enviar
-  if (influxClient.enviarDatos(data.c_str(), data.length())) {
-    Serial.println("Datos enviados a InfluxDB.");
-  } else {
-    Serial.println("Error al enviar datos a InfluxDB.");
-  }
-}*/
 
 

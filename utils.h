@@ -3,9 +3,15 @@
 
 #include <Preferences.h>
 
-bool ClearSpace(const char* name);
-void init_utils(const char* name);
-bool PutData(const char* name, const char* key, void* value, const size_t len);
-bool GetData(const char* name, const char* key, void* value, const size_t len);
+//----------------------------------------------------------------------------------------------------
+
+#define DEBUG_UTILS
+
+//----------------------------------------------------------------------------------------------------
+
+bool nsv_PrepareSpace(const char* name);
+bool nsv_CloseSpace();
+bool nsv_PutData(const char* key, void* value, const size_t len);
+bool nsv_GetData(const char* key, void* value, const size_t len);
 
 #endif // UTILS_H
