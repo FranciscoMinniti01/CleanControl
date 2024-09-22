@@ -10,6 +10,9 @@ void WiFiManager_c::WiFiManager(){
     WifiState = WIFI_CREDENTIALS_CHECK;
     WiFi.onEvent( [this](WiFiEvent_t event, WiFiEventInfo_t info){
                       this->WiFiEventCB(event, info); // Llamamos al método no estático usando 'this' y pasando los parámetros
+                      #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+                      Serial.printf("[WiFi-event] event: %d\n", event);
+                      #endif
                   });
     for (int i = 0; i < MAX_CREDENCIALES; i++) {
         ssids[i][0] = '\0';
@@ -77,29 +80,25 @@ void WiFiManager_c::WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info)
 // ACCES POINT MODE ----------------------------------------------------------------------------------------------------
         
         case ARDUINO_EVENT_WIFI_AP_START:
-            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
-            Serial.println("WiFi access point started");
-            #endif
-            WifiState = WIFI_AP_SERVER_INIT;
+            Serial.println("EVENT: AP STARTED");
             break;
-
         case ARDUINO_EVENT_WIFI_AP_STOP:
-            Serial.println("WiFi access point  stopped");
+            Serial.println("EVENT: AP STOPPED");
             break;
         case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
-            Serial.println("Client connected");
+            Serial.println("EVENT: AP Client connected");
             break;
         case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
-            Serial.println("Client disconnected");
+            Serial.println("EVENT: AP Client disconnected");
             break;
         case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
-            Serial.println("Assigned IP address to client");
+            Serial.println("EVENT: AP Assigned IP address to client");
             break;
         case ARDUINO_EVENT_WIFI_AP_PROBEREQRECVED:
-            Serial.println("Received probe request");
+            Serial.println("EVENT: AP Received probe request");
             break;
         case ARDUINO_EVENT_WIFI_AP_GOT_IP6:
-            Serial.println("AP IPv6 is preferred");
+            Serial.println("EVENT: AP IPv6 is preferred");
             break;
 
         default: break;
@@ -111,18 +110,20 @@ void WiFiManager_c::WiFiStateMachine()
     switch (WifiState)
     {
         case WIFI_CREDENTIALS_CHECK:
-            Serial.println("WIFI_CREDENTIALS_CHECK");
+            Serial.println("\n\n\n\n\n WIFI_CREDENTIALS_CHECK");
             if(GetCredentials()) WifiState = WIFI_STA_INIT;
             else WifiState = WIFI_AP_INIT;
             break;
 
         case WIFI_AP_INIT:
             Serial.println("WIFI_AP_INIT");
-            WiFi.mode(WIFI_AP_STA);
-            WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP);
-            WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP);
+
+            if(!WiFi.mode(WIFI_AP)) Serial.println("WiFi mode set failed");
+            if(!WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP)) Serial.println("soft ap config failed");
+            //WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP)
+            if(!WiFi.softAP("CCAP", NULL)) Serial.println("AP init failed");
             Serial.println(WiFi.softAPIP());
-            WifiState = WIFI_AP_WAIT_INIT;
+            WifiState = WIFI_AP_SERVER_INIT;
             break;
 
         case WIFI_AP_WAIT_INIT:
@@ -131,6 +132,7 @@ void WiFiManager_c::WiFiStateMachine()
         case WIFI_AP_SERVER_INIT:
             Serial.println("WIFI_AP_SERVER_INIT");
             server.begin();
+            WifiState = WIFI_AP_WAIT_CONNECTION;
             break;
           
         case WIFI_AP_WAIT_CONNECTION:
@@ -138,31 +140,47 @@ void WiFiManager_c::WiFiStateMachine()
             break;
 
         case WIFI_STA_INIT:
-            WiFi.softAPdisconnect(false);
+            Serial.println("FUNCIONO");
+            for (int i = 0; i < 3; i++) {
+                String ssidString = String(ssids[i]);
+                String passwordString = String(passwords[i]);
+                Serial.println("SSID " + String(i) + ": " + ssidString);
+                Serial.println("Password " + String(i) + ": " + passwordString);
+            }
+            WifiState = WIFI_STA_INIT_;
+            /*WiFi.softAPdisconnect(false);
             WiFi.mode(WIFI_STA);
-            WiFi.setAutoReconnect(true);
+            WiFi.setAutoReconnect(true);*/
             break;
+
+        case WIFI_STA_INIT_:
+          break;
     }
 }
 
-void WiFiManager_c::ServerManager(){
-  static int numeroVariable = 1;
+void WiFiManager_c::ServerManager()
+{
+  static int numeroVariable = 0;
   WiFiClient client = server.available();
 
-  if (client) {
-    Serial.println("Nuevo cliente conectado.");
+  if (client)
+  {
     String currentLine = "";
     String header = "";  // Almacenará la solicitud HTTP
 
     // Leer datos del cliente
-    while (client.connected()) {
-      if (client.available()) {
+    while (client.connected())
+    {
+      if (client.available())
+      {
         char c = client.read();
         header += c;
 
         // Fin de la solicitud HTTP
-        if (c == '\n') {
-          if (currentLine.length() == 0) {
+        if (c == '\n')
+        {
+          if (currentLine.length() == 0)
+          {
             // Enviar la página web al cliente
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type:text/html");
@@ -176,22 +194,27 @@ void WiFiManager_c::ServerManager(){
             client.println("Contraseña: <input type='password' name='contrasena'><br>");
             client.println("<input type='submit' value='Aceptar'>");
             client.println("</form>");
-            client.println("<p>Valor actual del número: " + String(numeroVariable) + "</p>");
+            client.println("<p>Valor actual del número: " + String(numeroVariable+1) + "</p>");
             client.println("</body></html>");
 
             client.println();
             break;
-          } else {
+          }
+          else
+          {
             currentLine = "";
           }
-        } else if (c != '\r') {
+        } 
+        else if (c != '\r')
+        {
           currentLine += c;
         }
       }
     }
 
     // Procesar los datos recibidos (extraer nombre y contraseña)
-    if (header.indexOf("GET /?nombre=") >= 0) {
+    if (header.indexOf("GET /?nombre=") >= 0)
+    {
       int nombreStart = header.indexOf("nombre=") + 7;
       int nombreEnd = header.indexOf("&", nombreStart);
       int contrasenaStart = header.indexOf("contrasena=") + 11;
@@ -201,16 +224,30 @@ void WiFiManager_c::ServerManager(){
 
       Serial.println("Nombre recibido: " + String(ssids[numeroVariable]));
       Serial.println("Contraseña recibida: " + String(passwords[numeroVariable]));
+      
+      Serial.print("DEBUG: se ingreso una credencial: ");
+      Serial.println(numeroVariable+1);
+      numeroVariable++;
     }
 
     // Cerrar la conexión con el cliente
     client.stop();
-    Serial.println("Cliente desconectado.");
+    Serial.println("DEBUG: Cliente stop");
   }
+
+  if(numeroVariable > 2)
+  {
+      Serial.println("DEBUG: Se llego a las 3 credenciales");
+      WifiState = WIFI_CREDENTIALS_CHECK;
+      SaveCredentials();
+  }
+
 }
 
 bool WiFiManager_c::GetCredentials(){
     bool err = false;
+
+    Serial.println("DEBUG: GetCredentials");
 
     for (int i = 0; i < MAX_CREDENCIALES; ++i)
     {
@@ -222,36 +259,46 @@ bool WiFiManager_c::GetCredentials(){
     {
         if(!GetData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , ssids[i], sizeof(ssids[i])))
         {
+            Serial.print("DEBUG: No se obtubo ssid:");
+            Serial.println(i);
             break;
         }
         if(!GetData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , passwords[i], sizeof(passwords[i])))
         {
+            Serial.print("DEBUG: No se obtubo password:");
+            Serial.println(i);
             break;
         }
+        Serial.println("DEBUG: se obtuvo almenos una credencial");
         err = true;
     }
     return err;
 }
 
-bool WiFiManager_c::SaveCredentials(const char* ssid, const char* password){
+bool WiFiManager_c::SaveCredentials()
+{
     bool err = false;
+    Serial.println("DEBUG: SaveCredentials");
+
     for (int i = 0; i < MAX_CREDENCIALES; ++i)
     {
-        if(ssids[i][0] != '\0')
+        if(ssids[i][0] != '\0' && passwords[i][0] != '\0')
         {
-            if(!PutData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , ssids[i], sizeof(ssids[i])))
+            if(!PutData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , static_cast<void*>(ssids[i]) , sizeof(ssids[i])))
             {
+                Serial.print("DEBUG: No se guaardo ssid:");
+                Serial.println(i);
                 break;
             }
-        }
-        if(passwords[i][0] != '\0')
-        {
-            if(!PutData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , passwords[i], sizeof(passwords[i])))
+            if(!PutData(WIFI_NAME_SPACE, (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , static_cast<void*>(passwords[i]) , sizeof(passwords[i])))
             {
+                Serial.print("DEBUG: No se guaardo password:");
+                Serial.println(i);
                 break;
             }
-        }
-        err = true;
+            Serial.println("DEBUG: se guardo almenos una credencial");
+            err = true;
+        } else Serial.println("DEBUG: no se guardo ninguna credencial");
     }
     return err;
 }

@@ -9,9 +9,9 @@
 
 //----------------------------------------------------------------------------------------------------
 
-#define WIFI_NAME_SPACE "wifi"
-#define WIFI_KEY_PASW   "pasw_"
-#define WIFI_KEY_SSID   "ssid_"
+#define WIFI_NAME_SPACE "credentials"
+#define WIFI_KEY_PASW   "pasw"
+#define WIFI_KEY_SSID   "ssid"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -48,7 +48,8 @@ enum StateWifiManager
     WIFI_AP_WAIT_CONNECTION,
     WIFI_AP_DISCONNECTION,
 
-    WIFI_STA_INIT
+    WIFI_STA_INIT,
+    WIFI_STA_INIT_
 };
 
 class WiFiManager_c
@@ -68,7 +69,7 @@ class WiFiManager_c
         void cargarCredencialesGuardadas();
 
         bool GetCredentials();
-        bool SaveCredentials(const char* ssid, const char* password);
+        bool SaveCredentials();//const char* ssid, const char* password);
 
         void WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info);
         void ServerManager();
