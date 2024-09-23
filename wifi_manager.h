@@ -2,7 +2,10 @@
 #define WIFI_MANAGER_H
 
 #include <WiFi.h>
+#include <WiFiMulti.h>
 #include <string>
+#include <Preferences.h>
+
 
 #include "utils.h"
 #include "config.h"
@@ -49,7 +52,8 @@ enum StateWifiManager
     WIFI_AP_DISCONNECTION,
 
     WIFI_STA_INIT,
-    WIFI_STA_INIT_
+    WIFI_STA_CONNECTING,
+    WIFI_STA_READY
 };
 
 class WiFiManager_c
@@ -60,13 +64,9 @@ class WiFiManager_c
 
     private:
         StateWifiManager WifiState;
-        char ssids[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];       // Array para almacenar los nombres de redes
-        char passwords[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];   // Array para almacenar las contraseñas
-
-        void intentarReconexion();
-        void iniciarAccessPoint();
-        void guardarCredenciales(const char* ssid, const char* password);
-        void cargarCredencialesGuardadas();
+        WiFiMulti wifiMulti;
+        char ssids[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
+        char passwords[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
 
         bool GetCredentials();
         bool SaveCredentials();//const char* ssid, const char* password);

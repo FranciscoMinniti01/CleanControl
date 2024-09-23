@@ -1,34 +1,35 @@
 #include "utils.h"
 
-Preferences preferences;
-
-bool nsv_PrepareSpace(const char* name)
+bool nsv_PrepareSpace(Preferences* preferences_ ,const char* name)
 {
-    if(!preferences.begin(name) )
+    if(!(*preferences_).begin(name) )
     {
         #if !defined(DEBUG) && !defined(DEBUG_UTILS)
         Serial.println("DEBUG: open space failed");
         #endif
         return false;
     }
+    Serial.println("DEBUG: begin");
     return true;
 }
 
-bool nsv_CloseSpace()
+bool nsv_CloseSpace(Preferences* preferences_ )
 {
-    preferences.end();
+    Serial.println("DEBUG: end");
+    (*preferences_).end();
+    Serial.println("DEBUG: end");
 }
 
-bool nsv_PutData(const char* key, void* value, const size_t len)
+bool nsv_PutData(Preferences* preferences_, const char* key, void* value, const size_t len)
 {
     Serial.print("PutData free entries:");
-    Serial.println(preferences.freeEntries());
+    Serial.println((*preferences_).freeEntries());
     
     /*if( !preferences.begin(name,false) ){
         Serial.println("DEBUG: begin failed");
         return false;
     }*/
-    if( preferences.putBytes(key, value, len) == 0){
+    if( (*preferences_).putBytes(key, value, len) == 0){
         Serial.println("DEBUG: putBytes failed");
         return false;
     }
@@ -36,10 +37,10 @@ bool nsv_PutData(const char* key, void* value, const size_t len)
     return true;
 }
 
-bool nsv_GetData(const char* key, void* value, const size_t len)
+bool nsv_GetData(Preferences* preferences_, const char* key, void* value, const size_t len)
 {
     //if( !preferences.begin(name,false) )             return false;
-    if( preferences.getBytes(key, value, len) == 0)  return false;
+    if( (*preferences_).getBytes(key, value, len) == 0)  return false;
     //preferences.end();
     return true;
 }

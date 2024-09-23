@@ -9,9 +9,9 @@
 
 //----------------------------------------------------------------------------------------------------
 
-bool nsv_PrepareSpace(const char* name);
-bool nsv_CloseSpace();
-bool nsv_PutData(const char* key, void* value, const size_t len);
-bool nsv_GetData(const char* key, void* value, const size_t len);
+bool nsv_PrepareSpace(Preferences* preferences_ ,const char* name);
+bool nsv_CloseSpace(Preferences* preferences_);
+bool nsv_PutData(Preferences* preferences_ ,const char* key, void* value, const size_t len);
+bool nsv_GetData(Preferences* preferences_ ,const char* key, void* value, const size_t len);
 
 #endif // UTILS_H
