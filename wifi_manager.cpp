@@ -8,8 +8,6 @@ IPAddress subnet_AP(SUBNET_IP_1, SUBNET_IP_2, SUBNET_IP_3, SUBNET_IP_4);
 
 Preferences preferences;
 
-//WiFiMulti wifiMulti;
-
 void WiFiManager_c::WiFiManager()
 {
     WifiState = WIFI_CREDENTIALS_CHECK;
