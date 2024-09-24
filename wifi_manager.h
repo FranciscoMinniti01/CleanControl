@@ -1,46 +1,46 @@
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
+// INCLUDES ----------------------------------------------------------------------------------------------------
+
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <string>
 #include <Preferences.h>
 
-
-#include "utils.h"
 #include "config.h"
 
-//----------------------------------------------------------------------------------------------------
+// DEFINES ----------------------------------------------------------------------------------------------------
 
-#define WIFI_NAME_SPACE "credentials"
-#define WIFI_KEY_PASW   "pasw"
-#define WIFI_KEY_SSID   "ssid"
+#define WIFI_NAME_SPACE   "credentials"
+#define WIFI_KEY_PASW     "pasw"
+#define WIFI_KEY_SSID     "ssid"
 
-//----------------------------------------------------------------------------------------------------
+// GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
 #define DEBUG_WIFI
 
-// CONFIG ACCESS POINT ----------------------------------------------------------------------------------------------------
+// ACCESS POINT CONFIG ----------------------------------------------------------------------------------------------------
 
 #define CHANNEL_AP        1
 #define SSID_HIDDEN_AP    0
 
-#define LOCAL_IP_1 192
-#define LOCAL_IP_2 168
-#define LOCAL_IP_3 4
-#define LOCAL_IP_4 1
+#define LOCAL_IP_1        192
+#define LOCAL_IP_2        168
+#define LOCAL_IP_3        4
+#define LOCAL_IP_4        1
 
-#define GATEWAY_IP_1 192
-#define GATEWAY_IP_2 168
-#define GATEWAY_IP_3 4
-#define GATEWAY_IP_4 1
+#define GATEWAY_IP_1      192
+#define GATEWAY_IP_2      168
+#define GATEWAY_IP_3      4
+#define GATEWAY_IP_4      1
 
-#define SUBNET_IP_1 255
-#define SUBNET_IP_2 255
-#define SUBNET_IP_3 255
-#define SUBNET_IP_4 0
+#define SUBNET_IP_1       255
+#define SUBNET_IP_2       255
+#define SUBNET_IP_3       255
+#define SUBNET_IP_4       0
 
-//----------------------------------------------------------------------------------------------------
+// MAIN DEFINES ----------------------------------------------------------------------------------------------------
 
 enum StateWifiManager
 {
@@ -62,6 +62,9 @@ class WiFiManager_c
         void WiFiManager();
         void WiFiStateMachine();
 
+        float getRSSI();
+        bool getWifiStatus();
+
     private:
         StateWifiManager WifiState;
         WiFiMulti wifiMulti;
@@ -75,5 +78,5 @@ class WiFiManager_c
         void ServerManager();
 };
 
-#endif // WIFI_MANAGER_H
+#endif//WIFI_MANAGER_H
 

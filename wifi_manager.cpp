@@ -1,5 +1,7 @@
 #include "wifi_manager.h"
 
+bool isconnected = false;
+
 WiFiServer server(80); //Esto nose si dejarlo aca o moverlo
 
 IPAddress local_ip_AP(LOCAL_IP_1, LOCAL_IP_2, LOCAL_IP_3, LOCAL_IP_4);
@@ -10,8 +12,11 @@ Preferences preferences;
 
 void WiFiManager_c::WiFiManager()
 {
+    Serial.println("ENTRO A ESTA FUNCION");
     WifiState = WIFI_CREDENTIALS_CHECK;
+
     WiFi.onEvent( [this](WiFiEvent_t event, WiFiEventInfo_t info){
+                      Serial.println("ENTRO A ESTA FUNCION");
                       this->WiFiEventCB(event, info);
                       #if !defined(DEBUG) && !defined(DEBUG_WIFI)
                       Serial.printf("[WiFi-event] event: %d\n", event);
@@ -116,16 +121,20 @@ void WiFiManager_c::WiFiStateMachine()
         case WIFI_CREDENTIALS_CHECK:
             Serial.println("\n\n\n\n\nWIFI_CREDENTIALS_CHECK");
             if(GetCredentials()){
+                Serial.println("WIFI STA");
                 WifiState = WIFI_STA_INIT;
-            }else WifiState = WIFI_AP_INIT;
+            }else {
+                WifiState = WIFI_AP_INIT;
+                Serial.println("WIFI AP");
+            }
             break;
 
         case WIFI_AP_INIT:
             if(!WiFi.disconnect()) Serial.println("ERROR: STA disconnect failed");
-            if(!WiFi.mode(WIFI_AP)) Serial.println("WiFi mode set failed");
-            if(!WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP)) Serial.println("soft ap config failed");
+            if(!WiFi.mode(WIFI_AP)) Serial.println("ERROR: WiFi mode set failed");
+            if(!WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP)) Serial.println("ERROR: soft ap config failed");
             //WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP)
-            if(!WiFi.softAP("CCAP", NULL)) Serial.println("AP init failed");
+            if(!WiFi.softAP("CCAP", NULL)) Serial.println("ERROR: AP init failed");
             Serial.println(WiFi.softAPIP());
             WifiState = WIFI_AP_SERVER_INIT;
             break;
@@ -161,6 +170,7 @@ void WiFiManager_c::WiFiStateMachine()
                 Serial.println("IP address: ");
                 Serial.println(WiFi.localIP());
                 WifiState = WIFI_STA_READY;
+                isconnected = true;
             }
             /*if(WiFi.isConnected()){
                 Serial.println("isConnected FUNCIONA");
@@ -172,6 +182,7 @@ void WiFiManager_c::WiFiStateMachine()
                 Serial.println("WIFI DISCONNECTED");
                 Serial.println("WIFI RECONNECTING .....");
                 WifiState = WIFI_STA_CONNECTING;
+                isconnected = false;
             }
             /*if(!WiFi.isConnected()){
                 Serial.println("isConnected FUNCIONA");
@@ -328,3 +339,14 @@ bool WiFiManager_c::SaveCredentials()
     preferences.end();
     return err;
 }
+
+float WiFiManager_c::getRSSI()
+{
+    return WiFi.RSSI();
+}
+
+bool WiFiManager_c::getWifiStatus()
+{
+    return isconnected;
+}
+
