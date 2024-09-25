@@ -62,6 +62,7 @@ class WiFiManager_c
 
         float getRSSI();
         bool getWifiStatus();
+        const char* getSSID();
 
     private:
         StateWifiManager WifiState;

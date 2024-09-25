@@ -2,35 +2,48 @@
 
 // POINT --------------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T>
-point_c<T>::point_c(char* measurement)
+point_c::point_c(const char* measurement)
     : point(String(measurement))
 {   
 }
 
-template <typename T>
-void point_c<T>::TagPoint(std::initializer_list<std::pair<const char*, T>> tags) {
-    for (const auto& tag : tags)
-    {
-        point.addTag(String(tag.first), tag.second);
-    }
+void point_c::FieldClear(){
+    point.clearFields();
 }
 
-template <typename T>
-void point_c<T>::FieldPoint(std::initializer_list<std::pair<const char*, T>> fields)
-{
-    point.clearFields();
-    for (const auto& field : fields)
-    {
-        point.addField(String(fields.first),fields.second);
-    }
+Point& point_c::getPoint(){
+    return point;
 }
+
+//template <class T>
+//void point_c::TagPoint(const char* tag , T value)
+void point_c::TagPoint(const char* tag , const char* value)
+{
+    //point.addTag(String(tag),value);
+    point.addTag(String(tag),String(value)); 
+}
+/*template void point_c::TagPoint(const char* tag, int value);
+template void point_c::TagPoint(const char* tag, double value);
+template void point_c::TagPoint(const char* tag, float value);
+template void point_c::TagPoint(const char* tag, char* value);
+template void point_c::TagPoint(const char* tag, bool value);*/
+
+template <class T>
+void point_c::FieldPoint(const char* fields , T value)
+{
+    point.addField(String(fields),value);
+}
+template void point_c::FieldPoint(const char* fields, int value);
+template void point_c::FieldPoint(const char* fields, double value);
+template void point_c::FieldPoint(const char* fields, float value);
+template void point_c::FieldPoint(const char* fields, char* value);
+template void point_c::FieldPoint(const char* fields, bool value);
+
 
 // INFLUXDB --------------------------------------------------------------------------------------------------------------------------------------------
 
 influxDB_c::influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert) 
     : client(url, org, bucket, token, cert)
-    //: client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert)
 {
 
 }

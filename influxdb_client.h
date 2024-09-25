@@ -27,13 +27,17 @@ class influxDB_c
         InfluxDBClient client;
 };
 
-template <typename T>
 class point_c
 {
     public:
-        point_c(char* measurement);
-        void TagPoint(std::initializer_list<std::pair<const char*, T>> tags);
-        void FieldPoint(std::initializer_list<std::pair<const char*, T>> fields);
+        point_c(const char* measurement);
+        void FieldClear();
+        Point& getPoint();
+        //template <class T>
+        //void TagPoint(const char* tag , T value);
+        void TagPoint(const char* tag , const char* value);
+        template <class T>
+        void FieldPoint(const char* fields , T value);
 
     private:
         Point point;
