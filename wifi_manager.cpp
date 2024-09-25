@@ -242,6 +242,12 @@ void WiFiManager_c::ServerManager()
     String currentLine = "";
     String header = "";  // Almacenará la solicitud HTTP
 
+    if(client.connected())
+    {
+      #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+      Serial.println("DEBUG: Cliente connected");   
+      #endif
+    }
     // Leer datos del cliente
     while (client.connected())
     {
@@ -254,11 +260,19 @@ void WiFiManager_c::ServerManager()
         char c = client.read();
         header += c;
 
-        // Fin de la solicitud HTTP
+        // Detecta el fin de la solicitud HTTP
         if (c == '\n')
         {
+          #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+          Serial.println("DEBUG: fin de la solicitud HTTP");    
+          #endif
+
           if (currentLine.length() == 0)
           {
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("DEBUG: currentLine length = 0");    
+            #endif
+
             // Enviar la página web al cliente
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type:text/html");
@@ -303,7 +317,7 @@ void WiFiManager_c::ServerManager()
       Serial.println("Nombre recibido: " + String(ssids[numeroVariable]));
       Serial.println("Contraseña recibida: " + String(passwords[numeroVariable]));
       
-      Serial.print("DEBUG: se ingreso la credencial: ");
+      Serial.print("Se ingreso la credencial: ");
       Serial.println(numeroVariable+1);
       numeroVariable++;
     }
@@ -317,7 +331,9 @@ void WiFiManager_c::ServerManager()
 
   if(numeroVariable > 2)
   {
+      #if !defined(DEBUG) && !defined(DEBUG_WIFI)
       Serial.println("DEBUG: Se llego a las 3 credenciales");
+      #endif
       WifiState = WIFI_CREDENTIALS_CHECK;
       SaveCredentials();
   }

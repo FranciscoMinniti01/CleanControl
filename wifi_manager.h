@@ -66,9 +66,7 @@ class WiFiManager_c
     private:
         StateWifiManager WifiState;
         WiFiMulti wifiMulti;
-
         bool isconnected = false;
-
         char ssids[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
         char passwords[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
 

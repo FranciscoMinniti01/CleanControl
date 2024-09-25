@@ -7,7 +7,6 @@
 #include <InfluxDbCloud.h>
 
 #include "config.h"
-#include <string>
 
 // GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
@@ -15,31 +14,26 @@
 
 // MAIN DEFINES ----------------------------------------------------------------------------------------------------
 
-enum StateWifiManager
-{
-    INFLUX_TIMESYNC,
-    INFLUX_VAL_CONN,
-    INFLUX_ADD_TAG,
-    INFLUX_ADD_FIELD,
-    INFLUX_WRITE_POINT
-};
-
 class influxDB_c
 {
     public:
         influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert);
+        void TimeSync();
+        bool ClientConnection();
+        bool ValidateConnection();
+        bool WhitePoint(Point& point);
         
     private:
-        StateWifiManager influxDBState;
         InfluxDBClient client;
-
-        void influxDBStateMachine();
 };
 
+template <typename T>
 class point_c
 {
     public:
         point_c(char* measurement);
+        void TagPoint(std::initializer_list<std::pair<const char*, T>> tags);
+        void FieldPoint(std::initializer_list<std::pair<const char*, T>> fields);
 
     private:
         Point point;

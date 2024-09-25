@@ -1,28 +1,32 @@
 #include "influxdb_client.h"
 
-/*Point sensor("wifi_status");
+// POINT --------------------------------------------------------------------------------------------------------------------------------------------
 
-void connect()
-{
-    sensor.addTag("device", ID_DEVICE);
-    sensor.addTag("SSID", "Claro-hogar");
-}
-
-void sendData(float rssi)
-{
-    sensor.clearFields();
-    sensor.addField("rssi",(int)rssi);
-    if (!client.writePoint(sensor)) {
-        Serial.print("InfluxDB write failed: ");
-        Serial.println(client.getLastErrorMessage());
-    }
-}*/
-
-point_c::point_c(char* measurement)
+template <typename T>
+point_c<T>::point_c(char* measurement)
     : point(String(measurement))
-{
-
+{   
 }
+
+template <typename T>
+void point_c<T>::TagPoint(std::initializer_list<std::pair<const char*, T>> tags) {
+    for (const auto& tag : tags)
+    {
+        point.addTag(String(tag.first), tag.second);
+    }
+}
+
+template <typename T>
+void point_c<T>::FieldPoint(std::initializer_list<std::pair<const char*, T>> fields)
+{
+    point.clearFields();
+    for (const auto& field : fields)
+    {
+        point.addField(String(fields.first),fields.second);
+    }
+}
+
+// INFLUXDB --------------------------------------------------------------------------------------------------------------------------------------------
 
 influxDB_c::influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert) 
     : client(url, org, bucket, token, cert)
@@ -31,23 +35,39 @@ influxDB_c::influxDB_c(const char* url, const char* org, const char* bucket, con
 
 }
 
-void influxDB_c::influxDBStateMachine()
+void influxDB_c::TimeSync()
 {
-    switch (influxDBState)
-    {
-        case INFLUX_TIMESYNC:
-            timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
-            break;
+    timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
+}
 
-        case INFLUX_VAL_CONN:
-            if (client.validateConnection()){
-                Serial.print("Connected to InfluxDB: ");
-                Serial.println(client.getServerUrl());
-            } else {
-                Serial.print("ERROR: InfluxDB connection failed: ");
-                Serial.print("\n\n");
-                Serial.println(client.getLastErrorMessage());
-            }
-            break;
+bool influxDB_c::ClientConnection()
+{
+    if (client.validateConnection()){
+        Serial.print("CONNECTED TO INFLUXDB: ");
+        Serial.println(client.getServerUrl());
+        return true;
+    } else {
+        Serial.println("ERROR: InfluxDB connection failed: ");
+        Serial.print("    ");
+        Serial.println(client.getLastErrorMessage());
+        return false;
     }
+}
+
+bool influxDB_c::ValidateConnection()
+{
+    if(client.validateConnection()) return true;
+    else return false;
+}
+
+bool influxDB_c::WhitePoint(Point& point)
+{
+    if (!client.writePoint(point))
+    {
+        Serial.println("ERROR: InfluxDB write failed: ");
+        Serial.print("    ");
+        Serial.println(client.getLastErrorMessage());
+        return false;
+    }
+    return true;
 }
