@@ -7,22 +7,45 @@
 #include <InfluxDbCloud.h>
 
 #include "config.h"
+#include <string>
 
-//----------------------------------------------------------------------------------------------------
+// GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
-
+#define DEBUG_INFLUX
 
 // MAIN DEFINES ----------------------------------------------------------------------------------------------------
 
-void connect();
-void sendData(float rssi);
+enum StateWifiManager
+{
+    INFLUX_TIMESYNC,
+    INFLUX_VAL_CONN,
+    INFLUX_ADD_TAG,
+    INFLUX_ADD_FIELD,
+    INFLUX_WRITE_POINT
+};
 
-/*class influxDBManager_c
+class influxDB_c
 {
     public:
+        influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert);
+        
+    private:
+        StateWifiManager influxDBState;
+        InfluxDBClient client;
+
+        void influxDBStateMachine();
+};
+
+class point_c
+{
+    public:
+        point_c(char* measurement);
 
     private:
-        InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
-}*/
+        Point point;
+};
 
 #endif//INFLUXDB_CLIENT_H
+
+
+

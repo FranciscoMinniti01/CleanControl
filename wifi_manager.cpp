@@ -1,7 +1,5 @@
 #include "wifi_manager.h"
 
-bool isconnected = false;
-
 WiFiServer server(80); //Esto nose si dejarlo aca o moverlo
 
 IPAddress local_ip_AP(LOCAL_IP_1, LOCAL_IP_2, LOCAL_IP_3, LOCAL_IP_4);
@@ -10,17 +8,12 @@ IPAddress subnet_AP(SUBNET_IP_1, SUBNET_IP_2, SUBNET_IP_3, SUBNET_IP_4);
 
 Preferences preferences;
 
-void WiFiManager_c::WiFiManager()
+WiFiManager_c::WiFiManager_c()
 {
-    Serial.println("ENTRO A ESTA FUNCION");
     WifiState = WIFI_CREDENTIALS_CHECK;
 
     WiFi.onEvent( [this](WiFiEvent_t event, WiFiEventInfo_t info){
-                      Serial.println("ENTRO A ESTA FUNCION");
                       this->WiFiEventCB(event, info);
-                      #if !defined(DEBUG) && !defined(DEBUG_WIFI)
-                      Serial.printf("[WiFi-event] event: %d\n", event);
-                      #endif
                   });
 
     for (int i = 0; i < MAX_CREDENCIALES; i++) {
@@ -31,85 +24,122 @@ void WiFiManager_c::WiFiManager()
 
 void WiFiManager_c::WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    #if !defined(DEBUG) && !defined(DEBUG_WIFI)
-    Serial.printf("[WiFi-event] event: %d\n", event);
-    #endif
-
     switch (event)
     {
 // GENERAL ----------------------------------------------------------------------------------------------------
         case ARDUINO_EVENT_WIFI_READY:
-            Serial.println("WIFI_READY");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: WIFI_READY");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_SCAN_DONE:
-            Serial.println("Completed scan for access points");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: Completed scan for access points");    
+            #endif
             break;
 // STATION MODE ----------------------------------------------------------------------------------------------------
         case ARDUINO_EVENT_WIFI_STA_START:
-            Serial.println("WiFi client started");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: WiFi client started");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_STA_STOP:
-            Serial.println("WiFi clients stopped");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: WiFi clients stopped");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_STA_CONNECTED:
-            Serial.println("Connected to access point");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: Connected to access point");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-            Serial.println("Disconnected from WiFi access point");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: Disconnected from WiFi access point");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
-            Serial.println("Authentication mode of access point has changed");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: Authentication mode of access point has changed");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-            Serial.print("Obtained IP address: ");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.print("EVENT: Obtained IP address: ");
             Serial.println(WiFi.localIP());
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_STA_LOST_IP:
-            Serial.println("Lost IP address and IP address is reset to 0");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: Lost IP address and IP address is reset to 0");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
-            Serial.println("STA IPv6 is preferred");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: STA IPv6 is preferred");    
+            #endif
             break;
 
 // ERRORES CREO ----------------------------------------------------------------------------------------------------
         
         case ARDUINO_EVENT_WPS_ER_SUCCESS:
-            Serial.println("WiFi Protected Setup (WPS): succeeded in enrollee mode");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: WiFi Protected Setup (WPS): succeeded in enrollee mode");    
+            #endif
             break;
         case ARDUINO_EVENT_WPS_ER_FAILED:
-            Serial.println("WiFi Protected Setup (WPS): failed in enrollee mode");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: WiFi Protected Setup (WPS): failed in enrollee mode");    
+            #endif
             break;
         case ARDUINO_EVENT_WPS_ER_TIMEOUT:
-            Serial.println("WiFi Protected Setup (WPS): timeout in enrollee mode");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: WiFi Protected Setup (WPS): timeout in enrollee mode");    
+            #endif
             break;
         case ARDUINO_EVENT_WPS_ER_PIN:
-            Serial.println("WiFi Protected Setup (WPS): pin code in enrollee mode");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: WiFi Protected Setup (WPS): pin code in enrollee mode");    
+            #endif
             break;
 
 // ACCES POINT MODE ----------------------------------------------------------------------------------------------------
         
         case ARDUINO_EVENT_WIFI_AP_START:
-            Serial.println("EVENT: AP STARTED");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: AP STARTED");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_AP_STOP:
-            Serial.println("EVENT: AP STOPPED");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: AP STOPPED");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
-            Serial.println("EVENT: AP Client connected");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: AP Client connected");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
-            Serial.println("EVENT: AP Client disconnected");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: AP Client disconnected");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
-            Serial.println("EVENT: AP Assigned IP address to client");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: AP Assigned IP address to client");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_AP_PROBEREQRECVED:
-            Serial.println("EVENT: AP Received probe request");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: AP Received probe request");    
+            #endif
             break;
         case ARDUINO_EVENT_WIFI_AP_GOT_IP6:
-            Serial.println("EVENT: AP IPv6 is preferred");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("EVENT: AP IPv6 is preferred");    
+            #endif
             break;
-
         default: break;
     }
 }
@@ -119,32 +149,41 @@ void WiFiManager_c::WiFiStateMachine()
     switch (WifiState)
     {
         case WIFI_CREDENTIALS_CHECK:
-            Serial.println("\n\n\n\n\nWIFI_CREDENTIALS_CHECK");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("STATE: WIFI_CREDENTIALS_CHECK");    
+            #endif
+
             if(GetCredentials()){
-                Serial.println("WIFI STA");
                 WifiState = WIFI_STA_INIT;
             }else {
                 WifiState = WIFI_AP_INIT;
-                Serial.println("WIFI AP");
             }
+
             break;
 
         case WIFI_AP_INIT:
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("STATE: WIFI_AP_INIT");    
+            #endif
+
             if(!WiFi.disconnect()) Serial.println("ERROR: STA disconnect failed");
             if(!WiFi.mode(WIFI_AP)) Serial.println("ERROR: WiFi mode set failed");
             if(!WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP)) Serial.println("ERROR: soft ap config failed");
             //WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP)
             if(!WiFi.softAP("CCAP", NULL)) Serial.println("ERROR: AP init failed");
+            Serial.print("IP address: ");
             Serial.println(WiFi.softAPIP());
+
             WifiState = WIFI_AP_SERVER_INIT;
             break;
 
-        case WIFI_AP_WAIT_INIT:
-            break;
-
         case WIFI_AP_SERVER_INIT:
-            Serial.println("WIFI_AP_SERVER_INIT");
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("STATE: WIFI_AP_SERVER_INIT");    
+            #endif
+
             server.begin();
+
             WifiState = WIFI_AP_WAIT_CONNECTION;
             break;
           
@@ -153,28 +192,32 @@ void WiFiManager_c::WiFiStateMachine()
             break;
 
         case WIFI_STA_INIT:
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.println("STATE: WIFI_STA_INIT");    
+            #endif
+
             if(!WiFi.softAPdisconnect(false)) Serial.println("ERROR: AP disconnect failed");
             WiFi.mode(WIFI_STA);
             WiFi.setAutoReconnect(true);
+
             for (int i = 0; i < MAX_CREDENCIALES; i++) {
                 if(ssids[i][0] != '\0' && passwords[i][0] != '\0'){
                     if(!wifiMulti.addAP(ssids[i],passwords[i])) Serial.printf("ERROR: add credential %d failed\n",i);
                 }
             }
+
             WifiState = WIFI_STA_CONNECTING;
             break;
 
         case WIFI_STA_CONNECTING:
             if(wifiMulti.run() == WL_CONNECTED){
                 Serial.println("WIFI CONNECTED");
-                Serial.println("IP address: ");
+                Serial.print("IP address: ");
                 Serial.println(WiFi.localIP());
                 WifiState = WIFI_STA_READY;
                 isconnected = true;
             }
-            /*if(WiFi.isConnected()){
-                Serial.println("isConnected FUNCIONA");
-            }*/
+            /*if(WiFi.isConnected()){}*/
             break;
 
         case WIFI_STA_READY:
@@ -184,9 +227,7 @@ void WiFiManager_c::WiFiStateMachine()
                 WifiState = WIFI_STA_CONNECTING;
                 isconnected = false;
             }
-            /*if(!WiFi.isConnected()){
-                Serial.println("isConnected FUNCIONA");
-            }*/
+            /*if(!WiFi.isConnected()){}*/
             break;
     }
 }
@@ -206,6 +247,10 @@ void WiFiManager_c::ServerManager()
     {
       if (client.available())
       {
+        #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+        Serial.println("DEBUG: Client available");    
+        #endif
+
         char c = client.read();
         header += c;
 
@@ -258,14 +303,16 @@ void WiFiManager_c::ServerManager()
       Serial.println("Nombre recibido: " + String(ssids[numeroVariable]));
       Serial.println("Contraseña recibida: " + String(passwords[numeroVariable]));
       
-      Serial.print("DEBUG: se ingreso una credencial: ");
+      Serial.print("DEBUG: se ingreso la credencial: ");
       Serial.println(numeroVariable+1);
       numeroVariable++;
     }
 
     // Cerrar la conexión con el cliente
     client.stop();
-    Serial.println("DEBUG: Cliente stop");
+    #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+    Serial.println("DEBUG: Cliente stop");   
+    #endif
   }
 
   if(numeroVariable > 2)
@@ -292,17 +339,21 @@ bool WiFiManager_c::GetCredentials()
     {
         if( !preferences.getBytes( (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , ssids[i], sizeof(ssids[i])) )
         {
-            Serial.print("DEBUG: No se obtubo ssid:");
-            Serial.println(i);
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.print("DEBUG: No se obtuvo ssid:");
+            Serial.println(i);    
+            #endif
             break;
         }
         if( !preferences.getBytes( (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , passwords[i], sizeof(passwords[i])))
         {
-            Serial.print("DEBUG: No se obtubo password:");
-            Serial.println(i);
+            #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+            Serial.print("DEBUG: No se obtuvo password:");
+            Serial.println(i);  
+            #endif
             break;
         }
-        Serial.println("DEBUG: se obtuvo almenos una credencial");
+        Serial.println("Se obtuvo credenciales");
         err = true;
     }
 
@@ -321,17 +372,21 @@ bool WiFiManager_c::SaveCredentials()
         {
             if(!preferences.putBytes( (std::string(WIFI_KEY_SSID) + std::to_string(i)).c_str() , static_cast<void*>(ssids[i]) , sizeof(ssids[i])))
             {
-                Serial.print("DEBUG: No se guaardo ssid:");
+                #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+                Serial.print("DEBUG: No se guardo ssid:");
                 Serial.println(i);
+                #endif
                 break;
             }
             if(!preferences.putBytes( (std::string(WIFI_KEY_PASW) + std::to_string(i)).c_str() , static_cast<void*>(passwords[i]) , sizeof(passwords[i])))
             {
-                Serial.print("DEBUG: No se guaardo password:");
+                #if !defined(DEBUG) && !defined(DEBUG_WIFI)
+                Serial.print("DEBUG: No se guardo password:");
                 Serial.println(i);
+                #endif
                 break;
             }
-            Serial.println("DEBUG: se guardo almenos una credencial");
+            Serial.println("Se guardo credenciales");
             err = true;
         }
     }
@@ -349,4 +404,3 @@ bool WiFiManager_c::getWifiStatus()
 {
     return isconnected;
 }
-

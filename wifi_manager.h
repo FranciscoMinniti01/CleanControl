@@ -5,7 +5,6 @@
 
 #include <WiFi.h>
 #include <WiFiMulti.h>
-#include <string>
 #include <Preferences.h>
 
 #include "config.h"
@@ -46,7 +45,6 @@ enum StateWifiManager
 {
     WIFI_CREDENTIALS_CHECK,
     WIFI_AP_INIT,
-    WIFI_AP_WAIT_INIT,
     WIFI_AP_SERVER_INIT,
     WIFI_AP_WAIT_CONNECTION,
     WIFI_AP_DISCONNECTION,
@@ -59,7 +57,7 @@ enum StateWifiManager
 class WiFiManager_c
 {
     public:
-        void WiFiManager();
+        WiFiManager_c();
         void WiFiStateMachine();
 
         float getRSSI();
@@ -68,11 +66,14 @@ class WiFiManager_c
     private:
         StateWifiManager WifiState;
         WiFiMulti wifiMulti;
+
+        bool isconnected = false;
+
         char ssids[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
         char passwords[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
 
         bool GetCredentials();
-        bool SaveCredentials();//const char* ssid, const char* password);
+        bool SaveCredentials();
 
         void WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info);
         void ServerManager();
