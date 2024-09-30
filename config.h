@@ -7,7 +7,7 @@
 
 // GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
-#define DEBUG
+#define DEBUG                 1
 
 #define TIME_FREC             1000000
 #define TIME_60S              60000000
@@ -45,7 +45,7 @@
 
 //DataOn
 #define M_DataOn              "DataOn"
-#define F1_DataOn
+#define F1_DataOn             "OnOff"
 
 //DataWifi
 #define M_DataWifi            "DataWifi"

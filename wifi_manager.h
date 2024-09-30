@@ -17,7 +17,7 @@
 
 // GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
-#define DEBUG_WIFI
+#define DEBUG_WIFI        1
 
 // ACCESS POINT CONFIG ----------------------------------------------------------------------------------------------------
 
@@ -66,10 +66,12 @@ class WiFiManager_c
 
     private:
         StateWifiManager WifiState;
-        WiFiMulti wifiMulti;
+        WiFiMulti wifiMulti; 
+
         bool isconnected = false;
         char ssids[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
         char passwords[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
+        char ssid[MAX_LEN_CREDENCIALES];
 
         bool GetCredentials();
         bool SaveCredentials();

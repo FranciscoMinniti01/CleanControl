@@ -15,18 +15,12 @@ Point& point_c::getPoint(){
     return point;
 }
 
-//template <class T>
-//void point_c::TagPoint(const char* tag , T value)
 void point_c::TagPoint(const char* tag , const char* value)
 {
-    //point.addTag(String(tag),value);
-    point.addTag(String(tag),String(value)); 
+    point.addTag(String(tag),value);
+    Serial.print("AddTag: ");
+    Serial.println(value);
 }
-/*template void point_c::TagPoint(const char* tag, int value);
-template void point_c::TagPoint(const char* tag, double value);
-template void point_c::TagPoint(const char* tag, float value);
-template void point_c::TagPoint(const char* tag, char* value);
-template void point_c::TagPoint(const char* tag, bool value);*/
 
 template <class T>
 void point_c::FieldPoint(const char* fields , T value)
@@ -39,14 +33,11 @@ template void point_c::FieldPoint(const char* fields, float value);
 template void point_c::FieldPoint(const char* fields, char* value);
 template void point_c::FieldPoint(const char* fields, bool value);
 
-
 // INFLUXDB --------------------------------------------------------------------------------------------------------------------------------------------
 
 influxDB_c::influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert) 
     : client(url, org, bucket, token, cert)
-{
-
-}
+{}
 
 void influxDB_c::TimeSync()
 {

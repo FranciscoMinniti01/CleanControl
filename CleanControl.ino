@@ -15,7 +15,8 @@ bool flag_DataWifi          = true;
 point_c DataWifi(M_DataWifi);
 
 WiFiManager_c wifimanager;
-influxDB_c*   influxClient = nullptr;
+influxDB_c*   influxClient  = nullptr;
+bool flagWiFiConnection     = false;
 
 // TIME CALLBACK ----------------------------------------------------------------------------------------------------
 
@@ -42,7 +43,6 @@ void setup()
     timerAlarm(timer_DataWifi, TIME_10S, true, 0);
 
     Serial.println("\n\n\n\n\nAPP INIT");
-
 }
 
 void loop()
@@ -55,29 +55,38 @@ void loop()
             influxClient = new influxDB_c(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
             influxClient->TimeSync();
             influxClient->ClientConnection();                  //Esto no deberia ir aca solo asi
-
+            
             DataON.TagPoint(T_ID_DEVICE,ID_DEVICE);
             DataON.TagPoint(T_ID_CLIENTE,ID_CLIENTE);
             DataWifi.TagPoint(T_ID_DEVICE,ID_DEVICE);
             DataWifi.TagPoint(T_ID_CLIENTE,ID_CLIENTE);
         }
 
+        if(!flagWiFiConnection) {
+            DataWifi.TagPoint(T_DataWifi,wifimanager.getSSID());
+            flagWiFiConnection = true;
+        }
+
         if(influxClient->ValidateConnection())
         {
             if(flag_DataON) {
                 DataON.FieldClear();
-                DataON.FieldPoint("field1", 3.14);
-                if(influxClient->WhitePoint(DataON.getPoint())) flag_DataON = false;
+                DataON.FieldPoint(F1_DataOn, 1);
+                if(influxClient->WhitePoint(DataON.getPoint())) {
+                    flag_DataON = false;
+                    Serial.println("DataON send");
+                }
             }
-        
             if(flag_DataWifi) {
-                DataWifi.TagPoint(T_DataWifi, wifimanager.getSSID());
                 DataWifi.FieldClear();
                 DataWifi.FieldPoint(F1_DataWifi, wifimanager.getRSSI());
-                if(influxClient->WhitePoint(DataWifi.getPoint())) flag_DataWifi = false;
+                if(influxClient->WhitePoint(DataWifi.getPoint())) {
+                    flag_DataWifi = false;
+                    Serial.println("DataWifi send");
+                }
             }
         }
-    }
+    } else flagWiFiConnection = false;
 }
 
 

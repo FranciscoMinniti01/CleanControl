@@ -167,10 +167,11 @@ void WiFiManager_c::WiFiStateMachine()
             #endif
 
             if(!WiFi.disconnect()) Serial.println("ERROR: STA disconnect failed");
-            if(!WiFi.mode(WIFI_AP)) Serial.println("ERROR: WiFi mode set failed");
+            if(!WiFi.mode(WIFI_AP)) Serial
+.println("ERROR: WiFi mode set failed");
             if(!WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP)) Serial.println("ERROR: soft ap config failed");
             //if(!WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP)) Serial.println("ERROR: AP init failed");
-            if(!WiFi.softAP("CCAP", NULL)) Serial.println("ERROR: AP init failed");
+            if(!WiFi.softAP(SSID_AP, NULL)) Serial.println("ERROR: AP init failed");
             Serial.print("IP address: ");
             Serial.println(WiFi.softAPIP());
 
@@ -423,5 +424,7 @@ bool WiFiManager_c::getWifiStatus()
 
 const char* WiFiManager_c::getSSID()
 {
-    return WiFi.SSID().c_str();
+    strncpy(ssid, WiFi.SSID().c_str(), sizeof(ssid) - 1);  // Copia segura, dejando espacio para el terminador nulo
+    ssid[sizeof(ssid) - 1] = '\0';  // Asegura que el array esté terminado en null
+    return ssid;
 }
