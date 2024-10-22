@@ -2,47 +2,37 @@
 
 #include "wifi_manager.h"
 #include "influxdb_client.h"
-#include "time.h"
+#include "config.h"
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
-
-hw_timer_t* timer_DataON    = NULL;
-bool flag_DataON            = true;
-point_c DataON(M_DataOn);
-
-hw_timer_t* timer_DataWifi  = NULL;
-bool flag_DataWifi          = true;
-point_c DataWifi(M_DataWifi);
 
 WiFiManager_c wifimanager;
 influxDB_c*   influxClient  = nullptr;
 bool flagWiFiConnection     = false;
+bool InfluxConnection       = false;
 
-// TIME CALLBACK ----------------------------------------------------------------------------------------------------
-
-void fun_DataON() {
-    flag_DataON = true;
-}
-
-void fun_DataWifi() {
-    flag_DataWifi = true;
-}
+// DATA -----------------------------------
+point_c DataON(M_DataOn);
+int16_t timer_DataOn;
+// ----------------------------------------
+point_c DataWifi(M_DataWifi);
+int16_t timer_DataWifi;
+// ----------------------------------------
 
 // MAIN FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 void setup()
 {
     Serial.begin(115200);
-
-    timer_DataON = timerBegin(TIME_FREC);
-    timerAttachInterrupt(timer_DataON, &fun_DataON);
-    timerAlarm(timer_DataON, TIME_10S, true, 0);
-
-    timer_DataWifi = timerBegin(TIME_FREC);
-    timerAttachInterrupt(timer_DataWifi, &fun_DataWifi);
-    timerAlarm(timer_DataWifi, TIME_10S, true, 0);
-
     Serial.println("\n\n\n\n\nAPP INIT");
+
+    timer_init();
+
+    // DATA -----------------------------------
+    timer_DataOn   = set_timer(TIME_30S);
+    // ----------------------------------------
+    timer_DataWifi = set_timer(TIME_30S);
+    // ----------------------------------------
 }
 
 void loop()
@@ -51,15 +41,23 @@ void loop()
 
     if(wifimanager.getWifiStatus())
     {    
-        if (influxClient == nullptr) {
+        if (influxClient == nullptr)
+        {
             influxClient = new influxDB_c(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
-            influxClient->TimeSync();
-            influxClient->ClientConnection();                  //Esto no deberia ir aca solo asi
             
+            // DATA -----------------------------------
             DataON.TagPoint(T_ID_DEVICE,ID_DEVICE);
             DataON.TagPoint(T_ID_CLIENTE,ID_CLIENTE);
+            // ----------------------------------------
             DataWifi.TagPoint(T_ID_DEVICE,ID_DEVICE);
             DataWifi.TagPoint(T_ID_CLIENTE,ID_CLIENTE);
+            // ----------------------------------------
+        }
+
+        if(!InfluxConnection) {
+            influxClient->TimeSync();
+            influxClient->ClientConnection();
+            InfluxConnection = true;
         }
 
         if(!flagWiFiConnection) {
@@ -69,24 +67,29 @@ void loop()
 
         if(influxClient->ValidateConnection())
         {
-            if(flag_DataON) {
-                DataON.FieldClear();
-                DataON.FieldPoint(F1_DataOn, 1);
-                if(influxClient->WhitePoint(DataON.getPoint())) {
-                    flag_DataON = false;
-                    Serial.println("DataON send");
-                }
-            }
-            if(flag_DataWifi) {
+            // DATA -----------------------------------
+            if(get_flag_timer(timer_DataWifi))
+            {
                 DataWifi.FieldClear();
                 DataWifi.FieldPoint(F1_DataWifi, wifimanager.getRSSI());
                 if(influxClient->WhitePoint(DataWifi.getPoint())) {
-                    flag_DataWifi = false;
                     Serial.println("DataWifi send");
                 }
             }
+            // ----------------------------------------
+            if(get_flag_timer(timer_DataOn))
+            {
+                DataON.FieldClear();
+                DataON.FieldPoint(F1_DataOn, 1);
+                if(influxClient->WhitePoint(DataON.getPoint())) {
+                    Serial.println("DataON send");
+                }
+            }
+            // ----------------------------------------
         }
-    } else flagWiFiConnection = false;
+        else flagWiFiConnection = false;
+    }
+    else flagWiFiConnection = false;
 }
 
 
