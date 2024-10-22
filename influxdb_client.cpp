@@ -1,19 +1,12 @@
 #include "influxdb_client.h"
 
-// POINT --------------------------------------------------------------------------------------------------------------------------------------------
+// POINT ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-point_c::point_c(const char* measurement)
-    : point(String(measurement))
-{   
-}
+point_c::point_c(const char* measurement): point(String(measurement)){ }
 
-void point_c::FieldClear(){
-    point.clearFields();
-}
+void point_c::FieldClear(){point.clearFields();}
 
-Point& point_c::getPoint(){
-    return point;
-}
+Point& point_c::getPoint(){ return point;}
 
 void point_c::TagPoint(const char* tag , const char* value)
 {
@@ -33,26 +26,19 @@ template void point_c::FieldPoint(const char* fields, float value);
 template void point_c::FieldPoint(const char* fields, char* value);
 template void point_c::FieldPoint(const char* fields, bool value);
 
-// INFLUXDB --------------------------------------------------------------------------------------------------------------------------------------------
+// INFLUXDB ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-influxDB_c::influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert) 
-    : client(url, org, bucket, token, cert)
-{}
-
-void influxDB_c::TimeSync()
-{
-    timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
-}
+influxDB_c::influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert) : client(url, org, bucket, token, cert) {}
 
 bool influxDB_c::ClientConnection()
 {
-    if (client.validateConnection()){
+    timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
+    if (client.validateConnection()) {
         Serial.print("CONNECTED TO INFLUXDB: ");
         Serial.println(client.getServerUrl());
         return true;
     } else {
-        Serial.println("ERROR: InfluxDB connection failed: ");
-        Serial.print("    ");
+        Serial.println("ERROR: InfluxDB connection failed:    ");
         Serial.println(client.getLastErrorMessage());
         return false;
     }
@@ -68,10 +54,10 @@ bool influxDB_c::WhitePoint(Point& point)
 {
     if (!client.writePoint(point))
     {
-        Serial.println("ERROR: InfluxDB write failed: ");
-        Serial.print("    ");
+        Serial.println("ERROR: InfluxDB write failed:   ");
         Serial.println(client.getLastErrorMessage());
         return false;
     }
     return true;
 }
+

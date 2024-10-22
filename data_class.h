@@ -28,6 +28,8 @@ typedef struct {
     uint16_t Average;
 } analog_pin_t;
 
+// FUNCTIONS ----------------------------------------------------------------------------------------------------
+
 bool SaveData();
 void input_control();
 void data_input_init();

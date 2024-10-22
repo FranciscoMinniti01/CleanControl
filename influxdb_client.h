@@ -8,17 +8,12 @@
 
 #include "config.h"
 
-// GENERAL CONFIG ----------------------------------------------------------------------------------------------------
-
-#define DEBUG_INFLUX
-
 // MAIN DEFINES ----------------------------------------------------------------------------------------------------
 
 class influxDB_c
 {
     public:
         influxDB_c(const char* url, const char* org, const char* bucket, const char* token, const char* cert);
-        void TimeSync();
         bool ClientConnection();
         bool ValidateConnection();
         bool WhitePoint(Point& point);

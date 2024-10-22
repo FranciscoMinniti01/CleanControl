@@ -167,8 +167,7 @@ void WiFiManager_c::WiFiStateMachine()
             #endif
 
             if(!WiFi.disconnect()) Serial.println("ERROR: STA disconnect failed");
-            if(!WiFi.mode(WIFI_AP)) Serial
-.println("ERROR: WiFi mode set failed");
+            if(!WiFi.mode(WIFI_AP)) Serial.println("ERROR: WiFi mode set failed");
             if(!WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP)) Serial.println("ERROR: soft ap config failed");
             //if(!WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP)) Serial.println("ERROR: AP init failed");
             if(!WiFi.softAP(SSID_AP, NULL)) Serial.println("ERROR: AP init failed");

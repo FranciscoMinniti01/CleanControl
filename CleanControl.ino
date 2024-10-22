@@ -55,7 +55,6 @@ void loop()
         }
 
         if(!InfluxConnection) {
-            influxClient->TimeSync();
             influxClient->ClientConnection();
             InfluxConnection = true;
         }
@@ -87,7 +86,7 @@ void loop()
             }
             // ----------------------------------------
         }
-        else flagWiFiConnection = false;
+        else InfluxConnection = false;
     }
     else flagWiFiConnection = false;
 }
