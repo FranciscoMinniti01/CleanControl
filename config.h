@@ -11,10 +11,11 @@
 // GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
 #define DEBUG                 1
+#define MAX_NUM_STORAGE       5
 
 // TIMER CONFIG ----------------------------------------------------------------------------------------------------
 
-#define MAX_NUM_TIMERS        5
+#define MAX_NUM_TIMERS        5           // Este depende principalmente del numero de variables a publicar en influx mas dos timer que utilizo para la obtencion y el almacenado de datos - > MAX_DATA_INFLUX + 2
 #define TIME_FREC             1000000
 #define BASE_TIME_10mS        10000
 
@@ -63,8 +64,6 @@
 
 // INPUT DATA CONFIG ----------------------------------------------------------------------------------------------------
 
-
-
 #define NUMBER_OF_DIGITAL_PIN 3
 #define DIGITAL_PIN_CERO      15
 #define DIGITAL_PIN_UNO       16
@@ -74,6 +73,5 @@
 #define ANALOG_PIN_UNO        10
 
 #define COUNTER_COMPARATOR    10
-
 
 #endif//CONFIG_H

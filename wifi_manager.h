@@ -5,6 +5,8 @@
 
 #include <WiFi.h>
 #include <WiFiMulti.h>
+#include <WebServer.h>
+
 #include <Preferences.h>
 
 #include "config.h"
@@ -67,7 +69,7 @@ class WiFiManager_c
         bool isconnected = false;
         char ssids[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
         char passwords[MAX_CREDENCIALES][MAX_LEN_CREDENCIALES];
-        char ssid[MAX_LEN_CREDENCIALES];
+        //char ssid[MAX_LEN_CREDENCIALES];
 
         bool GetCredentials();
         bool SaveCredentials();

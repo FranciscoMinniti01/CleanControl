@@ -1,28 +1,30 @@
-#ifndef MY_TIMER_H
-#define MY_TIMER_H
+#ifndef STORAGE_H
+#define STORAGE_H
 
 // INCLUDE ----------------------------------------------------------------------------------------------------
 
-#include "time.h"
-#include "esp32-hal-timer.h"
+#include <Preferences.h>
 #include "config.h"
+
+// DEFINES ----------------------------------------------------------------------------------------------------
+
+#define NAME_SPACE    "storage"
+#define KEY_NAME      "D"
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 typedef struct {
-    uint16_t conter;
-    uint16_t comparator;
-    bool flag;
-    int16_t index = -1;
-} my_timer_t;
+    void*    data;
+    size_t   len;
+    int16_t  index = -1;
+} storage_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-bool timer_init();
-int16_t set_timer(uint16_t comparator);
-bool get_flag_timer(uint16_t index);
-bool timer_end();
+int16_t set_data(void* data, size_t len);
+bool gat_data(int16_t index);
+bool seve_data(int16_t index);
 
 // ----------------------------------------------------------------------------------------------------
 
-#endif//MY_TIMER_H
+#endif//STORAGE_H
