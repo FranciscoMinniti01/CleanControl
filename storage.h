@@ -22,7 +22,7 @@ typedef struct {
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 int16_t set_data(void* data, size_t len);
-bool gat_data(int16_t index);
+bool get_data(int16_t index);
 bool seve_data(int16_t index);
 
 // ----------------------------------------------------------------------------------------------------

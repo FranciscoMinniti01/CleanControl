@@ -1,6 +1,6 @@
-#ifndef WIFI_MANAGER_H
-#define WIFI_MANAGER_H
-
+#ifndef WIFI_MANAGER_OLD_H
+#define WIFI_MANAGER_OLD_H
+/*
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
 #include <WiFi.h>
@@ -31,38 +31,45 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-enum State_Wifi_t
+
+
+// PARAMETROS ESPECIALES ----------------------------------------------------------------------------------------------------
+
+#define NUM_SPECIAL_PARAM     2
+#define MAX_LEN_SPECIAL_PARAM 30
+#define OFSET MAX_CREDENCIALES*2
+
+#define MACHINE_ID_INDEX      OFSET + 0
+#define CLIENT_ID_INDEX       OFSET + 1
+
+// MAIN DEFINES ----------------------------------------------------------------------------------------------------
+
+enum StateWifiManager
 {
     WIFI_INIT,
-    WIFI_INIT,
-    WIFI_READY,
 
     WIFI_AP_INIT,
     WIFI_AP_SERVER_INIT,
-    WIFI_AP_SERVER_DEINIT,
     WIFI_AP_DEINIT,
-    WIFI_AP_READY,
-
+    
     WIFI_STA_INIT,
     WIFI_STA_DEINIT,
-    WIFI_STA_READY
+    
+    WIFI_READY
 };
 
-typedef void(*handle_fun)();
+float getRSSI();
+bool getWifiStatus();
+const char* getSSID();
 
-typedef struct {
-    String      root;
-    HTTPMethod  request;
-    handle_fun  fun;
-} hdmi_root_t;
+void WiFiEvent(WiFiEvent_t event);
+void WiFiManager_c();
+void WiFiStateMachine();
+*/
+// ----------------------------------------------------------------------------------------------------
 
-typedef struct {
-    ssids[MAX_LEN_CREDENCIALES];
-    passwords[MAX_LEN_CREDENCIALES];
-} credentials_t;
+void FormRoot();
+void FormSubmitRoot();
 
 #endif//WIFI_MANAGER_H
-
-
-
 
