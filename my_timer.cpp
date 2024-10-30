@@ -47,8 +47,10 @@ int16_t set_timer(uint16_t comparator)
       my_timers[i].comparator = comparator;
       my_timers[i].flag = false;
       my_timers[i].conter = 0;
+      return i;
     }
   }
+  return -1;
 }
 
 bool get_flag_timer(uint16_t index)

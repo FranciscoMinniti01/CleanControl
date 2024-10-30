@@ -6,10 +6,10 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-WiFiManager_c wifimanager;
 influxDB_c*   influxClient  = nullptr;
 bool flagWiFiConnection     = false;
 bool InfluxConnection       = false;
+sv_param_t* sv_param        = NULL;
 
 // DATA -----------------------------------
 point_c DataON(M_DataOn);
@@ -18,6 +18,8 @@ int16_t timer_DataOn;
 point_c DataWifi(M_DataWifi);
 int16_t timer_DataWifi;
 // ----------------------------------------
+
+
 
 // MAIN FUNCTIONS ----------------------------------------------------------------------------------------------------
 
@@ -37,9 +39,10 @@ void setup()
 
 void loop()
 {
-    wifimanager.WiFiStateMachine();
+    WiFi_manager();
+    sv_param = getSpecialParam();
 
-    if(wifimanager.getWifiStatus())
+    if(getWifiStatus())
     {    
         if (influxClient == nullptr)
         {
@@ -60,7 +63,7 @@ void loop()
         }
 
         if(!flagWiFiConnection) {
-            DataWifi.TagPoint(T_DataWifi,wifimanager.getSSID());
+            DataWifi.TagPoint(T_DataWifi,getSSID().c_str());
             flagWiFiConnection = true;
         }
 
@@ -70,7 +73,7 @@ void loop()
             if(get_flag_timer(timer_DataWifi))
             {
                 DataWifi.FieldClear();
-                DataWifi.FieldPoint(F1_DataWifi, wifimanager.getRSSI());
+                DataWifi.FieldPoint(F1_DataWifi, getRSSI());
                 if(influxClient->WhitePoint(DataWifi.getPoint())) {
                     Serial.println("DataWifi send");
                 }

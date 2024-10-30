@@ -9,6 +9,8 @@
 
 #include "config.h"
 
+#define DEBUG_WIFI 1
+
 // ACCESS POINT CONFIG ----------------------------------------------------------------------------------------------------
 
 #define CHANNEL_AP            1
@@ -29,12 +31,36 @@
 #define SUBNET_IP_3           255
 #define SUBNET_IP_4           0
 
-// VARIABLES ----------------------------------------------------------------------------------------------------
+// VARIABLES STORAGE PARAMETERS ----------------------------------------------------------------------------------------------------
+
+#define OFSET MAX_CREDENCIALES*2
+
+// SPECIAL PARAMETERS
+#define NUM_SPECIAL_PARAM     2
+#define MACHINE_ID_INDEX      OFSET + 0
+#define CLIENT_ID_INDEX       OFSET + 1
+
+typedef struct {
+    String machine_id;
+    String client_id;
+} sv_param_t;
+
+// VARIABLES SERVER ----------------------------------------------------------------------------------------------------
+
+typedef void(*handle_fun)();
+
+typedef struct {
+    String      root;
+    HTTPMethod  request;
+    handle_fun  fun;
+} hdmi_root_t;
+
+// VARIABLES WIFI ----------------------------------------------------------------------------------------------------
 
 enum State_Wifi_t
 {
     WIFI_INIT,
-    WIFI_INIT,
+    WIFI_DEINIT,
     WIFI_READY,
 
     WIFI_AP_INIT,
@@ -48,18 +74,21 @@ enum State_Wifi_t
     WIFI_STA_READY
 };
 
-typedef void(*handle_fun)();
-
 typedef struct {
-    String      root;
-    HTTPMethod  request;
-    handle_fun  fun;
-} hdmi_root_t;
-
-typedef struct {
-    ssids[MAX_LEN_CREDENCIALES];
-    passwords[MAX_LEN_CREDENCIALES];
+  String   ssid;
+  String   password;
 } credentials_t;
+
+// FUNCTIONS ---------------------------------------------------------------------------------------------------- 
+
+void WiFiStateMachine();
+void WiFi_manager();
+
+float getRSSI();
+bool getWifiStatus();
+bool getWiFiError();
+String getSSID();
+sv_param_t* getSpecialParam();
 
 #endif//WIFI_MANAGER_H
 
