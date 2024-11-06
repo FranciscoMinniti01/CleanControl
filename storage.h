@@ -8,22 +8,20 @@
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
-#define NAME_SPACE    "storage"
-#define KEY_NAME      "D"
+#define NAME_SPACE "storage"
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 typedef struct {
-    void*    data;
-    size_t   len;
-    int16_t  index = -1;
+    void*     data;
+    size_t    len;
+    String    key;
 } storage_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-int16_t set_data(void* data, size_t len);
-bool get_data(int16_t index);
-bool seve_data(int16_t index);
+bool get_data(storage_t* s);
+bool seve_data(storage_t* s);
 
 // ----------------------------------------------------------------------------------------------------
 

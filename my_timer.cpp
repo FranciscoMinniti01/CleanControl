@@ -6,6 +6,7 @@
 
 hw_timer_t* timer    = NULL;
 bool flag            = true;
+
 my_timer_t my_timers[MAX_NUM_TIMERS];
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
@@ -14,7 +15,7 @@ void timer_callback()
 {
   for(uint16_t i = 0 ; i<MAX_NUM_TIMERS ; i++ )
   {
-    if(my_timers[i].index < 0) break;
+    if(my_timers[i].index < 0) continue;
     my_timers[i].conter ++;
     if(my_timers[i].comparator == my_timers[i].conter)
     {
@@ -37,7 +38,7 @@ bool timer_init()
   return true;
 }
 
-int16_t set_timer(uint16_t comparator)
+bool set_timer(uint16_t comparator)
 {
   for(uint16_t i = 0 ; i<MAX_NUM_TIMERS ; i++ )
   {
@@ -47,25 +48,20 @@ int16_t set_timer(uint16_t comparator)
       my_timers[i].comparator = comparator;
       my_timers[i].flag = false;
       my_timers[i].conter = 0;
-      return i;
+      return true;
     }
   }
-  return -1;
+  return false;
 }
 
-bool get_flag_timer(uint16_t index)
+bool get_flag_timer(time_t index)
 {
-  if(index>0 && index<MAX_NUM_TIMERS)
+  if(index >= 0 && index<MAX_NUM_TIMERS)
   {
     bool flag = my_timers[index].flag;
     my_timers[index].flag = false;
     return flag;
   } else return false;
-}
-
-bool timer_end()
-{
-  return false;
 }
 
 // ----------------------------------------------------------------------------------------------------

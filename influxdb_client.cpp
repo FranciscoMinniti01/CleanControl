@@ -25,6 +25,8 @@ template void point_c::FieldPoint(const char* fields, double value);
 template void point_c::FieldPoint(const char* fields, float value);
 template void point_c::FieldPoint(const char* fields, char* value);
 template void point_c::FieldPoint(const char* fields, bool value);
+template void point_c::FieldPoint(const char* fields, uint8_t value);
+template void point_c::FieldPoint(const char* fields, unsigned short value);
 
 // INFLUXDB ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

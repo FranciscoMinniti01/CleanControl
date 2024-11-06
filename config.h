@@ -12,20 +12,11 @@
 
 // GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
-#define DEBUG                 1
-#define MAX_NUM_STORAGE       5
-
-// TIMER CONFIG ----------------------------------------------------------------------------------------------------
-
-#define MAX_NUM_TIMERS        5           // Este depende principalmente del numero de variables a publicar en influx mas dos timer que utilizo para la obtencion y el almacenado de datos - > MAX_DATA_INFLUX + 2
-#define TIME_FREC             1000000
-#define BASE_TIME_10mS        10000
-
-#define TIME_10mS             1
-#define TIME_60S              6000
-#define TIME_30S              3000
-#define TIME_10S              1000
-#define TIME_1S               100
+#define DEBUG_WIFI            1
+#define DEBUG_SERVER          1
+#define DEBUG_INFLUX          1
+#define DEBUG_DATA            1
+#define DEBUG_APP             1
 
 // WIFI CONFIG ----------------------------------------------------------------------------------------------------
 
@@ -35,7 +26,7 @@
 // ACCESS POINT CONFIG ----------------------------------------------------------------------------------------------------
 
 #define SSID_AP               "CleanControlAP"
-#define PASSWORD_AP           "1234"
+#define PASSWORD_AP           "12345678"
 #define MAX_CONNECTION_AP     1
 
 // INFLUXDB CONFIG ----------------------------------------------------------------------------------------------------
@@ -48,9 +39,6 @@
 
 // DATA CONFIG ----------------------------------------------------------------------------------------------------
 
-#define ID_DEVICE             "ESP32S3"           // Para cargado con el acces point
-#define ID_CLIENTE            "Carrefour"         // Para cargado con el acces point
-
 //TAGs
 #define T_ID_DEVICE           "MAQUINA"
 #define T_ID_CLIENTE          "CLIENTE"
@@ -58,6 +46,8 @@
 //DataOn
 #define M_DataOn              "DataOn"
 #define F1_DataOn             "OnOff"
+#define F2_DataOn             "TimeOn"
+#define F3_DataOn             "Ttimeon"
 
 //DataWifi
 #define M_DataWifi            "DataWifi"
@@ -72,7 +62,7 @@
 #define DIGITAL_PIN_DOS       17
 
 #define NUMBER_OF_ANALOG_PIN  1
-#define ANALOG_PIN_UNO        10
+#define ANALOG_PIN_CERO       10
 
 #define COUNTER_COMPARATOR    10
 

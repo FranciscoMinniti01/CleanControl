@@ -4,52 +4,47 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-storage_t storage[MAX_NUM_STORAGE];
 Preferences preferences;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-int16_t set_data(void* data, size_t len)
+bool get_data(storage_t* s)
 {
-  if(data != NULL && len != 0)
-  {
-    for(int8_t i = 0 ; i<MAX_NUM_STORAGE ; i++)
-    {
-      if(storage[i].index < 0)
-      {
-        storage[i].len = len;
-        storage[i].data = data;
-        storage[i].index = i;
-        return i;
-      }
-    }
-  }
-  return -1;
-}
+  bool err = true;
 
-bool get_data(int16_t index)
-{
-  if( !preferences.begin(NAME_SPACE) ) Serial.println("ERROR: Preferences begin failed");
-
-  if( !preferences.getBytes( (std::string(KEY_NAME) + std::to_string(index)).c_str(), storage[index].data, storage[index].len))
-  {
-    return false;
-    storage[index].data = NULL;
-  }
-  preferences.end();
-  return true;
-}
-
-bool seve_data(int16_t index)
-{
-  if( !preferences.begin(NAME_SPACE) ) Serial.println("ERROR: Preferences begin failed");
-
-  if( !preferences.putBytes( (std::string(KEY_NAME) + std::to_string(index)).c_str(), storage[index].data, storage[index].len))
-  {
+  if( !preferences.begin(NAME_SPACE) ) { 
+    Serial.println("ERROR: Preferences begin failed");
     return false;
   }
+
+  if( !preferences.getBytes( (s->key).c_str(), s->data, s->len))
+  {
+    char* char_ptr = (char*)s->data;
+    for(uint8_t i = 0; i<s->len ; i++) char_ptr[i] = 0;
+    err = false;
+  }
+
   preferences.end();
-  return true;
+  return err;
+}
+
+bool seve_data(storage_t* s)
+{
+  bool err = true;
+
+  if( !preferences.begin(NAME_SPACE) ) { 
+    Serial.println("ERROR: Preferences begin failed");
+    return false;
+  }
+
+  if( !preferences.putBytes( (s->key).c_str(), s->data, s->len))
+  {
+    Serial.println("ERROR: Preferences putBytes failed");
+    err = false;
+  }
+
+  preferences.end();
+  return err;
 }
 
 // ----------------------------------------------------------------------------------------------------

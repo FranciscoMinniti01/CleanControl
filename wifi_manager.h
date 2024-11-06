@@ -1,6 +1,18 @@
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
+/* 
+  Notas:
+    - La clave del AP no puede ser menor a 8 caracteres ni mayor (creo) de 60 caracteres
+    - La SSID del AP no puede ser mayor de 63 caracteres
+    - La SSID en addAP de wifi multi no puede ser mayor a 30 caracteres
+    - La Clave en addAP de wifi multi no puede ser mayor a 60 caracteres
+
+    - Problemas: 
+      - En set_credentials recibe la ssid y la password como string, podria cambiarlo a puntero a char pero no estoy seguro de las ventajas o desventajas
+      - Si po alguna razon no se llama a set_hdmi_root antes del estado WIFI_AP_SERVER_INIT, no se inicializa el servidor web
+*/
+
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
 #include <WiFi.h>
@@ -9,9 +21,11 @@
 
 #include "config.h"
 
-#define DEBUG_WIFI 1
+// ACCESS POINT ----------------------------------------------------------------------------------------------------
 
-// ACCESS POINT CONFIG ----------------------------------------------------------------------------------------------------
+// ROOT ----------------------------------------
+#define MAX_HDMI_ROOT 2
+// ----------------------------------------
 
 #define CHANNEL_AP            1
 #define SSID_HIDDEN_AP        0
@@ -31,21 +45,7 @@
 #define SUBNET_IP_3           255
 #define SUBNET_IP_4           0
 
-// VARIABLES STORAGE PARAMETERS ----------------------------------------------------------------------------------------------------
-
-#define OFSET MAX_CREDENCIALES*2
-
-// SPECIAL PARAMETERS
-#define NUM_SPECIAL_PARAM     2
-#define MACHINE_ID_INDEX      OFSET + 0
-#define CLIENT_ID_INDEX       OFSET + 1
-
-typedef struct {
-    String machine_id;
-    String client_id;
-} sv_param_t;
-
-// VARIABLES SERVER ----------------------------------------------------------------------------------------------------
+// SERVER ----------------------------------------------------------------------------------------------------
 
 typedef void(*handle_fun)();
 
@@ -55,40 +55,72 @@ typedef struct {
     handle_fun  fun;
 } hdmi_root_t;
 
-// VARIABLES WIFI ----------------------------------------------------------------------------------------------------
+// WIFI ----------------------------------------------------------------------------------------------------
 
 enum State_Wifi_t
 {
-    WIFI_INIT,
-    WIFI_DEINIT,
-    WIFI_READY,
-
-    WIFI_AP_INIT,
-    WIFI_AP_SERVER_INIT,
-    WIFI_AP_SERVER_DEINIT,
-    WIFI_AP_DEINIT,
-    WIFI_AP_READY,
-
-    WIFI_STA_INIT,
-    WIFI_STA_DEINIT,
-    WIFI_STA_READY
+  WIFI_INIT,
+  WIFI_READY,
+  WIFI_DEINIT
 };
 
+enum State_AP_t
+{
+  WIFI_AP_INIT,
+  WIFI_AP_SERVER_INIT,
+  WIFI_AP_READY,
+  WIFI_AP_SERVER_DEINIT,
+  WIFI_AP_DEINIT
+};
+
+enum State_STA_t
+{
+  WIFI_STA_INIT,
+  WIFI_STA_CLEAR_CREDENTIALS,
+  WIFI_STA_ADD_CREDENTIALS,
+  WIFI_STA_READY,
+  WIFI_STA_DEINIT
+};
+
+#define KEY_CREDENTIAL_PASSWORD "CP"
+#define KEY_CREDENTIAL_SSID     "CS"
+
 typedef struct {
-  String   ssid;
-  String   password;
+  char   ssid[MAX_LEN_CREDENCIALES];
+  char   password[MAX_LEN_CREDENCIALES];
 } credentials_t;
 
-// FUNCTIONS ---------------------------------------------------------------------------------------------------- 
+// PRIVATE FUNCTIONS ---------------------------------------------------------------------------------------------------- 
 
-void WiFiStateMachine();
+void get_storage_credentials();
+
 void WiFi_manager();
 
+void WiFi_stateMachine();
+
+void AP_stateMachine();
+
+void STA_stateMachine();
+
+// PUBLIC FUNCTIONS ---------------------------------------------------------------------------------------------------- 
+
+bool set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_);
+
+bool set_credentials(String ssid, String password);
+
+void WiFi_manager();
+
+credentials_t* get_credentials();
+
 float getRSSI();
+
 bool getWifiStatus();
+
 bool getWiFiError();
+
 String getSSID();
-sv_param_t* getSpecialParam();
+
+// ----------------------------------------------------------------------------------------------------
 
 #endif//WIFI_MANAGER_H
 
