@@ -3,14 +3,14 @@
 #include "wifi_manager.h"
 #include "influxdb_client.h"
 #include "server_manager.h"
-#include "data_class.h"
+#include "gpio_data.h"
 #include "config.h"
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 influxDB_c*   influxClient  = nullptr;
-bool flagWiFiConnection     = false;
-bool InfluxConnection       = false;
+bool is_wifi_connected      = false;
+bool is_influx_connected    = false;
 sv_param_t* sv_param        = NULL;
 
 // DATA ----------------------------------------
@@ -30,7 +30,7 @@ void setup()
 
     timer_init();
     server_init();
-    data_input_init();
+    gpio_data_init();
 
     // DATA -----------------------------------
     timer_DataOn   = set_timer(TIME_30S);
@@ -42,7 +42,7 @@ void setup()
 void loop()
 {
   WiFi_manager();
-  input_control();
+  gpio_data_control();
 
   if(getWifiStatus())
   {    
@@ -61,14 +61,14 @@ void loop()
       // ----------------------------------------
     }
 
-    if(!InfluxConnection) {
+    if(!is_influx_connected) {
       influxClient->ClientConnection();
-      InfluxConnection = true;
+      is_influx_connected = true;
     }
 
-    if(!flagWiFiConnection) {
+    if(!is_wifi_connected) {
       DataWifi.TagPoint(T_DataWifi,getSSID().c_str());
-      flagWiFiConnection = true;
+      is_wifi_connected = true;
     }
 
     if(influxClient->ValidateConnection())
@@ -89,17 +89,17 @@ void loop()
       {
         DataON.FieldClear();
         DataON.FieldPoint(F1_DataOn, digital_pin->state );
-        DataON.FieldPoint(F2_DataOn, digital_pin->time_counter[1] );
-        DataON.FieldPoint(F3_DataOn, digital_pin->total_time[1]);
+        DataON.FieldPoint(F2_DataOn, digital_pin->time_state[1] );
+        DataON.FieldPoint(F3_DataOn, digital_pin->total_time_state[1]);
         if(influxClient->WhitePoint(DataON.getPoint())) {
             Serial.println("DataON send");
         }
       }
       // ----------------------------------------
     }
-    else InfluxConnection = false;
+    else is_influx_connected = false;
   }
-  else flagWiFiConnection = false;
+  else is_wifi_connected = false;
 }
 
 

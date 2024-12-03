@@ -9,7 +9,7 @@
 
 // TIMER CONFIG ----------------------------------------------------------------------------------------------------
 
-#define MAX_NUM_TIMERS        5           // Este depende principalmente del numero de variables a publicar en influx mas dos timer que utilizo para la obtencion y el almacenado de datos - > MAX_DATA_INFLUX + 2
+#define MAX_NUM_TIMERS        5
 #define TIME_FREC             1000000
 #define BASE_TIME_10mS        10000
 

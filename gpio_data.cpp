@@ -1,6 +1,6 @@
 // INCLUDE ----------------------------------------------------------------------------------------------------
 
-#include "data_class.h"
+#include "gpio_data.h"
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
@@ -15,51 +15,50 @@ my_time_t timer_save;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-void data_input_init()
+void gpio_data_init()
 {
   timer_input   = set_timer(TIME_10mS);
-  timer_save   = set_timer(TIME_60S);
+  timer_save    = set_timer(TIME_60S);
 
   // DIGITAL PIN -----------------------------------
-  digital_pin[0].pin = DIGITAL_PIN_CERO;
-  digital_pin[1].pin = DIGITAL_PIN_UNO;
-  digital_pin[2].pin = DIGITAL_PIN_DOS;
+  digital_pin[0].pin  = DIGITAL_PIN_CERO;
+  digital_pin[1].pin  = DIGITAL_PIN_UNO;
+  digital_pin[2].pin  = DIGITAL_PIN_DOS;
   // ANALOG PIN -----------------------------------
-  analog_pin[0].pin = ANALOG_PIN_CERO;
+  analog_pin[0].pin   = ANALOG_PIN_CERO;
   // -----------------------------------
 
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
     pinMode(digital_pin[i].pin,INPUT);
 
-    digital_storage[i][0].data = (void*)&(digital_pin[i].total_time[0]);
-    digital_storage[i][0].len  = sizeof(digital_pin[i].total_time[0]);
-    digital_storage[i][0].key  = KEY_DIGTAL_TIME_DOWN;
+    digital_storage[i][HIGH].data = (void*)&(digital_pin[i].total_time_state[HIGH]);
+    digital_storage[i][HIGH].len  = sizeof(digital_pin[i].total_time_state[HIGH]);
+    digital_storage[i][HIGH].key  = KEY_DIGTAL_TIME_ON + String(i);
 
-    digital_storage[i][1].data = (void*)&(digital_pin[i].total_time[1]);
-    digital_storage[i][1].len  = sizeof(digital_pin[i].total_time[1]);
-    digital_storage[i][1].key  = KEY_DIGTAL_TIME_UP;
+    digital_storage[i][LOW].data = (void*)&(digital_pin[i].total_time_state[LOW]);
+    digital_storage[i][LOW].len  = sizeof(digital_pin[i].total_time_state[LOW]);
+    digital_storage[i][LOW].key  = KEY_DIGTAL_TIME_OFF + String(i);
 
-    get_data(&digital_storage[i][0]);
-    get_data(&digital_storage[i][1]);
-
+    get_data(&digital_storage[i][HIGH]);
+    get_data(&digital_storage[i][LOW]);
   }
 
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
-    analog_storage[i].data = (void*)&(analog_pin[i].Average);
-    analog_storage[i].len  = sizeof(uint16_t);
-    analog_storage[i].key  = KEY_DIGTAL_TIME_AVE;
+    analog_storage[i].data = (void*)&(analog_pin[i].average);
+    analog_storage[i].len  = sizeof(analog_pin[i].average);
+    analog_storage[i].key  = KEY_ANALOG_AVERAGE + String(i);
 
     get_data(&analog_storage[i]);
   }
 }
 
-void input_control()
+void gpio_data_control()
 {
   static uint8_t auxiliar_digital = 0;
 
-  static uint8_t  analogRead_counter = 0;
+  static uint8_t  analog_read_counter = 0;
   static uint16_t analog_states[NUMBER_OF_ANALOG_PIN][COUNTER_COMPARATOR];
   static uint8_t  analog_states_index = 0;
   static uint16_t auxiliar_Average = 0;
@@ -70,26 +69,26 @@ void input_control()
     for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
     {
       auxiliar_digital = digitalRead(digital_pin[i].pin);
-      if(auxiliar_digital == digital_pin[i].last)
+      if(auxiliar_digital == digital_pin[i].last_state)
       {
         digital_pin[i].counter ++;
         if(digital_pin[i].counter >= COUNTER_COMPARATOR)
         {
-          digital_pin[i].time_counter[digital_pin[i].state] = 0; // Es importante que este arriba de digital_pin[i].state = auxiliar_digital; ya que pone en cero el estado anterior
-          digital_pin[i].state = auxiliar_digital;
-          digital_pin[i].counter = 0;
+          digital_pin[i].state    = auxiliar_digital;
+          digital_pin[i].time_state[digital_pin[i].state] = 0; // Es importante que este arriba de digital_pin[i].state = auxiliar_digital; ya que pone en cero el estado anterior
+          digital_pin[i].counter  = 0;
         }
       }
       else
       {
-        digital_pin[i].last = auxiliar_digital;
+        digital_pin[i].last_state = auxiliar_digital;
         digital_pin[i].counter = 0;
       }
-      digital_pin[i].time_counter[digital_pin[i].state] ++;
-      digital_pin[i].total_time[digital_pin[i].state] ++;
+      digital_pin[i].time_state[digital_pin[i].state] ++;
+      digital_pin[i].total_time_state[digital_pin[i].state] ++;
     }
 
-    if(analogRead_counter >= COUNTER_COMPARATOR)
+    if(analog_read_counter >= COUNTER_COMPARATOR)
     {
       for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
       {
@@ -98,7 +97,7 @@ void input_control()
         {
           auxiliar_Average += analog_states[i][j];
         }
-        if(auxiliar_analog_flag) analog_pin[i].Average = auxiliar_Average/COUNTER_COMPARATOR;
+        if(auxiliar_analog_flag) analog_pin[i].average = auxiliar_Average/COUNTER_COMPARATOR;
       }
       analog_states_index++;
       if(analog_states_index >= COUNTER_COMPARATOR)
@@ -106,17 +105,17 @@ void input_control()
         auxiliar_analog_flag = true;
         analog_states_index=0;
       }
-      analogRead_counter = 0;
+      analog_read_counter = 0;
     }
-    else analogRead_counter++;
+    else analog_read_counter++;
   }
 
   if(get_flag_timer(timer_save))
   {
     for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
     {
-      seve_data(&digital_storage[i][0]);
-      seve_data(&digital_storage[i][1]);
+      seve_data(&digital_storage[i][HIGH]);
+      seve_data(&digital_storage[i][LOW]);
     }
     for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
     {
@@ -127,15 +126,25 @@ void input_control()
 
 // FUNCTIONS GET ----------------------------------------------------------------------------------------------------
 
-digital_pin_t* get_digital_pin(uint8_t index)
+digital_pin_t* get_digital_pin(uint8_t pin)
 {
-  return &digital_pin[index];
+  for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
+  {
+    if(pin == digital_pin[i].pin) return &digital_pin[i];
+  }
+  return NULL;
 }
 
-analog_pin_t* get_analog_pin(uint8_t index)
+analog_pin_t* get_analog_pin(uint8_t pin)
 {
-  return &analog_pin[index];
+    for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
+  {
+    if(pin == analog_pin[i].pin) return &analog_pin[i];
+  }
+  return NULL;
 }
+
+// ----------------------------------------------------------------------------------------------------
 
 
 

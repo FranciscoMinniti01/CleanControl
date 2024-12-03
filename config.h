@@ -31,7 +31,7 @@
 
 // INFLUXDB CONFIG ----------------------------------------------------------------------------------------------------
 
-#define INFLUXDB_URL          "http://200.23.159.2:10010"
+#define INFLUXDB_URL          "http://149.78.55.22:10010"
 #define INFLUXDB_ORG          "7f9af91f5425e5ef"            
 #define INFLUXDB_TOKEN        "8mpluT_LBK3_nKJIVmOscI-WEO3QCPCg9mg-_VRZFMBq2bpSJk7ySHW6Im0H3MOmmUQUZ-e2Vf34CKMlpf0fcg=="
 #define TZ_INFO               "UTC-3" //Time zone info
@@ -53,17 +53,5 @@
 #define M_DataWifi            "DataWifi"
 #define T_DataWifi            "SSID"
 #define F1_DataWifi           "RSSI"
-
-// INPUT DATA CONFIG ----------------------------------------------------------------------------------------------------
-
-#define NUMBER_OF_DIGITAL_PIN 3
-#define DIGITAL_PIN_CERO      15
-#define DIGITAL_PIN_UNO       16
-#define DIGITAL_PIN_DOS       17
-
-#define NUMBER_OF_ANALOG_PIN  1
-#define ANALOG_PIN_CERO       10
-
-#define COUNTER_COMPARATOR    10
 
 #endif//CONFIG_H
