@@ -4,7 +4,6 @@
 // INCLUDE ----------------------------------------------------------------------------------------------------
 
 #include <Preferences.h>
-#include "config.h"
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -12,14 +11,16 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-typedef struct {
-    void*     data;
-    size_t    len;
-    String    key;
+typedef struct
+{
+  void*     data;
+  size_t    len;
+  String    key;
 } storage_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
+bool set_data_storage(storage_t* s, void* d, size_t l, String k);
 bool get_data(storage_t* s);
 bool seve_data(storage_t* s);
 

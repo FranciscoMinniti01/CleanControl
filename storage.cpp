@@ -8,11 +8,19 @@ Preferences preferences;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
+bool set_data_storage(storage_t* s, void* d, size_t l, String k)
+{
+  s->data = d;
+  s->len  = l;
+  s->key  = k;
+}
+
 bool get_data(storage_t* s)
 {
   bool err = true;
 
-  if( !preferences.begin(NAME_SPACE) ) { 
+  if( !preferences.begin(NAME_SPACE) )
+  { 
     Serial.println("ERROR: Preferences begin failed");
     return false;
   }

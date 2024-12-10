@@ -18,9 +18,10 @@
 #define INDEX_CLIENT_ID       1
 
 typedef struct {
-    String machine_id;
-    String client_id;
-} sv_param_t;
+  String machine_id;
+  String client_id;
+  bool is_updated;
+}sv_param_t;
 
 // FUNCTIONS ---------------------------------------------------------------------------------------------------- 
 

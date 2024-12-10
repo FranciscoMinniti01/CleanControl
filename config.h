@@ -32,26 +32,41 @@
 // INFLUXDB CONFIG ----------------------------------------------------------------------------------------------------
 
 #define INFLUXDB_URL          "http://149.78.55.22:10010"
-#define INFLUXDB_ORG          "7f9af91f5425e5ef"            
+#define INFLUXDB_ORG          "7f9af91f5425e5ef"      
+#define INFLUXDB_BUCKET       "CleanControl"      
 #define INFLUXDB_TOKEN        "8mpluT_LBK3_nKJIVmOscI-WEO3QCPCg9mg-_VRZFMBq2bpSJk7ySHW6Im0H3MOmmUQUZ-e2Vf34CKMlpf0fcg=="
 #define TZ_INFO               "UTC-3" //Time zone info
-#define INFLUXDB_BUCKET       "CleanControl"
 
 // DATA CONFIG ----------------------------------------------------------------------------------------------------
 
-//TAGs
-#define T_ID_DEVICE           "MAQUINA"
-#define T_ID_CLIENTE          "CLIENTE"
+typedef struct {
+  Point     point;
+  my_time_t timer;
+}data_t;
+
+enum index_poins
+{
+  DATA_WIFI,
+  DATA_ONOFF
+};
+
+#define NUMBER_OF_DATA        2
+
+//GLOBAL TAGS
+#define TAG_ID_DEVICE         "MAQUINA"
+#define TAG_ID_CLIENTE        "CLIENTE"
 
 //DataOn
-#define M_DataOn              "DataOn"
-#define F1_DataOn             "OnOff"
-#define F2_DataOn             "TimeOn"
-#define F3_DataOn             "Ttimeon"
+#define MENSUREMENT_ONOFF     "ONOFF"
+#define FIELT_ONOFF_STATE     "State"
+#define FIELT_ONOFF_TON       "TON"
+#define FIELT_ONOFF_TOFF      "TOFF"
+#define FIELT_ONOFF_TTON      "TTON"
+#define FIELT_ONOFF_TTOFF     "TTOFF"
 
 //DataWifi
-#define M_DataWifi            "DataWifi"
-#define T_DataWifi            "SSID"
-#define F1_DataWifi           "RSSI"
+#define MENSUREMENT_WIFI      "WIFI"
+#define TAG_WIFI_SSID         "SSID"
+#define FIELT_WIFI_RSSI       "RSSI"
 
 #endif//CONFIG_H

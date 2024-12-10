@@ -11,95 +11,71 @@
 influxDB_c*   influxClient  = nullptr;
 bool is_wifi_connected      = false;
 bool is_influx_connected    = false;
+bool is_influx_initialized  = false;
 sv_param_t* sv_param        = NULL;
 
-// DATA ----------------------------------------
-point_c DataON(M_DataOn);
-my_time_t timer_DataOn;
-// ----------------------------------------
-point_c DataWifi(M_DataWifi);
-my_time_t timer_DataWifi;
-// ----------------------------------------
+data_t data[NUMBER_OF_DATA]
 
 // MAIN FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 void setup()
 {
-    Serial.begin(115200);
-    Serial.println("\n\n\n\n\n---------- APP INIT ----------");
+  Serial.begin(115200);
+  Serial.println("\n\n\n\n\n---------- APP INIT ----------");
 
-    timer_init();
-    server_init();
-    gpio_data_init();
+  // DATA -----------------------------------
+  data[DATA_WIFI].point  = Point(MENSUREMENT_ONOFF);
+  data[DATA_WIFI].timer  = set_timer(TIME_30S);
+  // ----------------------------------------
 
-    // DATA -----------------------------------
-    timer_DataOn   = set_timer(TIME_30S);
-    // ----------------------------------------
-    timer_DataWifi = set_timer(TIME_30S);
-    // ----------------------------------------
+  timer_init();
+  server_init();
+  gpio_data_init();
+  sv_param = get_special_param(); 
 }
 
 void loop()
 {
   WiFi_manager();
   gpio_data_control();
-
   if(getWifiStatus())
-  {    
-    if (influxClient == nullptr)
-    {
-      influxClient = new influxDB_c(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
-      
-      sv_param = get_special_param();
-
-      // DATA -----------------------------------
-      DataON.TagPoint(T_ID_DEVICE,(sv_param->machine_id).c_str());
-      DataON.TagPoint(T_ID_CLIENTE,(sv_param->client_id).c_str());
-      // ----------------------------------------
-      DataWifi.TagPoint(T_ID_DEVICE,(sv_param->machine_id).c_str());
-      DataWifi.TagPoint(T_ID_CLIENTE,(sv_param->client_id).c_str());
-      // ----------------------------------------
-    }
-
-    if(!is_influx_connected) {
-      influxClient->ClientConnection();
-      is_influx_connected = true;
-    }
-
-    if(!is_wifi_connected) {
-      DataWifi.TagPoint(T_DataWifi,getSSID().c_str());
-      is_wifi_connected = true;
-    }
-
-    if(influxClient->ValidateConnection())
+  {
+    if(is_influx_initialized && is_influx_connected())
     {
       // DATA -----------------------------------
-      if(get_flag_timer(timer_DataWifi))
+      if(get_flag_timer(data[DATA_WIFI].timer))
       {
-        DataWifi.FieldClear();
-        DataWifi.FieldPoint(F1_DataWifi, getRSSI());
-        if(influxClient->WhitePoint(DataWifi.getPoint())) {
-            Serial.println("DataWifi send");
-        }
-      }
-      // ----------------------------------------
-      digital_pin_t* digital_pin = get_digital_pin(0);
-
-      if(get_flag_timer(timer_DataOn))
-      {
-        DataON.FieldClear();
-        DataON.FieldPoint(F1_DataOn, digital_pin->state );
-        DataON.FieldPoint(F2_DataOn, digital_pin->time_state[1] );
-        DataON.FieldPoint(F3_DataOn, digital_pin->total_time_state[1]);
-        if(influxClient->WhitePoint(DataON.getPoint())) {
-            Serial.println("DataON send");
-        }
+        data[DATA_WIFI].point.addTag(TAG_WIFI_SSID,getSSID().c_str());
+        data[DATA_WIFI].point.clearFields();
+        data[DATA_WIFI].point.addField(FIELT_WIFI_RSSI,getRSSI());
+        if(influx_white_point(&data[DATA_WIFI].point)) Serial.println("INFO: Mensurement WIFI send");
       }
       // ----------------------------------------
     }
-    else is_influx_connected = false;
+    else if(!is_influx_initialized)
+    { 
+      if(!sv_param.machine_id.empty() && !sv_param.client_id.empty())
+      {
+        influx_init(INFLUXDB_URL,INFLUXDB_ORG,INFLUXDB_BUCKET,INFLUXDB_TOKEN,InfluxDbCloud2CACert)
+        sv_param.is_updated = true;
+        is_influx_initialized = true;
+      }
+    }
+    else
+    {
+      influx_connection();
+    }
+
+    if(sv_param.is_updated)
+    {
+      for(int i=0 ; i<NUMBER_OF_DATA ; i++)
+      {
+        data[i].point.TagPoint(TAG_ID_DEVICE,(sv_param->machine_id).c_str());
+        data[i].point.TagPoint(TAG_ID_CLIENTE,(sv_param->client_id).c_str());
+      }
+    }
+
   }
-  else is_wifi_connected = false;
 }
 
 
