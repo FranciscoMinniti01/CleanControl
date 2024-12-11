@@ -11,7 +11,7 @@
 bool is_wifi_connected      = false;
 bool is_influx_connected    = false;
 bool is_influx_initialized  = false;
-sv_param_t* sv_param        = NULL;
+user_param_t* sv_param        = NULL;
 
 gpio_data_t data[NUMBER_OF_DATA];
 

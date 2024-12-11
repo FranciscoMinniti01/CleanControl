@@ -104,7 +104,7 @@ void STA_stateMachine();
 
 // PUBLIC FUNCTIONS ---------------------------------------------------------------------------------------------------- 
 
-bool set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_);
+void set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_);
 
 bool set_credentials(String ssid, String password);
 

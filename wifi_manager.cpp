@@ -37,19 +37,9 @@ static bool wifi_STA_new_credentials = false;       // Indica que hay nuevas cre
 
 // FUNCTIONS SERVER ----------------------------------------------------------------------------------------------------
 
-bool set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_)
+void set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_)
 {
-  for(uint8_t i = 0; i<MAX_HDMI_ROOT; i++)
-  {
-    if(hdmi_root[i].fun == NULL)
-    {
-      hdmi_root[i].root     = root_;
-      hdmi_root[i].request  = request_;
-      hdmi_root[i].fun      = fun_;
-      return true;
-    }
-  }
-  return false;
+  server.on(root_, request_, fun_);
 }
 
 // FUNCTIONS CREDENTIALS ----------------------------------------------------------------------------------------------------
