@@ -3,24 +3,29 @@
 
 // INCLUDE ----------------------------------------------------------------------------------------------------
 
+#include "Print.h"
+#include "HardwareSerial.h"
+
 #include "esp32-hal-gpio.h"
 #include "esp32-hal-adc.h"
-#include <Preferences.h>
 
-#include "config.h"
+#include "my_timer.h"
+#include "storage.h"
 
-// CONFIGURATION ----------------------------------------------------------------------------------------------------
+// GPIO DATA CONFIG ----------------------------------------------------------------------------------------------------
 
-// DIGITAL PIN -----------------------------------
+// DIGITAL PIN -----------------------
 #define NUMBER_OF_DIGITAL_PIN 3
 #define DIGITAL_PIN_CERO      15
 #define DIGITAL_PIN_UNO       16
 #define DIGITAL_PIN_DOS       17
-// ANALOG PIN -----------------------------------
+// ANALOG PIN ------------------------
 #define NUMBER_OF_ANALOG_PIN  1
 #define ANALOG_PIN_CERO       10
 // -----------------------------------
 
+#define TIME_TO_INPUT         TIME_10mS
+#define TIME_TO_SAVE          TIME_60S
 #define COUNTER_COMPARATOR    10
 
 // DEFINES ----------------------------------------------------------------------------------------------------
@@ -29,29 +34,33 @@
 #define KEY_DIGTAL_TIME_OFF   "DD"
 #define KEY_ANALOG_AVERAGE    "A"
 
-typedef struct {
-  uint8_t pin;
-  bool last_state;
-  uint8_t counter;
-  bool state;
-  uint16_t time_state[2];
-  uint16_t total_time_state[2];
+// VARIABLES ----------------------------------------------------------------------------------------------------
+
+typedef struct 
+{
+  uint8_t   pin;
+  bool      last_state;
+  uint8_t   counter;
+  bool      state;
+  uint16_t  time_state[2];
+  uint16_t  total_time_state[2];
+  storage_t total_time_storage[2];
 } digital_pin_t;
 
-typedef struct {
-  uint8_t pin;
-  uint16_t average;
+typedef struct
+{
+  uint8_t   pin;
+  uint16_t  values[COUNTER_COMPARATOR];
+  uint16_t  average;
+  storage_t average_storage;
 } analog_pin_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 void gpio_data_init();
 void gpio_data_control();
-
-// GET FUNCTIONS ----------------------------------------------------------------------------------------------------
-
-digital_pin_t* get_digital_pin(uint8_t pin);
-analog_pin_t* get_analog_pin(uint8_t pin);
+bool get_digital_pin(uint8_t pin);
+uint16_t get_analog_pin(uint8_t pin);
 
 // ----------------------------------------------------------------------------------------------------
 

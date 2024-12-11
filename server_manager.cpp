@@ -189,14 +189,14 @@ void FormSubmitRoot()
   {
     special_params.machine_id = server.arg("machineid");
     if(! seve_data(&storage_param[INDEX_MACHINE_ID])) Serial.println("EROOR: Special param not save");
-    is_updated = true;
+    //is_updated = true;
   }
   // ----------------------------------------
   if(server.arg("clientid"))  
   {
     special_params.client_id  = server.arg("clientid");
     if(! seve_data(&storage_param[INDEX_CLIENT_ID])) Serial.println("EROOR: Special param not save");
-    is_updated = true;
+    //is_updated = true;
   }
   // ----------------------------------------
 

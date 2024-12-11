@@ -8,7 +8,7 @@ Preferences preferences;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-bool set_data_storage(storage_t* s, void* d, size_t l, String k)
+void set_data_storage(storage_t* s, void* d, size_t l, String k)
 {
   s->data = d;
   s->len  = l;
@@ -17,8 +17,6 @@ bool set_data_storage(storage_t* s, void* d, size_t l, String k)
 
 bool get_data(storage_t* s)
 {
-  bool err = true;
-
   if( !preferences.begin(NAME_SPACE) )
   { 
     Serial.println("ERROR: Preferences begin failed");
@@ -29,17 +27,15 @@ bool get_data(storage_t* s)
   {
     char* char_ptr = (char*)s->data;
     for(uint8_t i = 0; i<s->len ; i++) char_ptr[i] = 0;
-    err = false;
+    return false;
   }
 
   preferences.end();
-  return err;
+  return true;
 }
 
 bool seve_data(storage_t* s)
 {
-  bool err = true;
-
   if( !preferences.begin(NAME_SPACE) ) { 
     Serial.println("ERROR: Preferences begin failed");
     return false;
@@ -48,11 +44,11 @@ bool seve_data(storage_t* s)
   if( !preferences.putBytes( (s->key).c_str(), s->data, s->len))
   {
     Serial.println("ERROR: Preferences putBytes failed");
-    err = false;
+    return false;
   }
 
   preferences.end();
-  return err;
+  return true;
 }
 
 // ----------------------------------------------------------------------------------------------------

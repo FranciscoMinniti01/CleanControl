@@ -3,17 +3,18 @@
 
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
+#include "Print.h"
+#include "HardwareSerial.h"
+
 #include <InfluxDbClient.h>
 #include <InfluxDbCloud.h>
-
-#include "config.h"
 
 // MAIN DEFINES ----------------------------------------------------------------------------------------------------
 
 void influx_init(const char* url, const char* org, const char* bucket, const char* token, const char* cert);
-bool influx_connection();
-bool is_influx_connected();
-bool influx_white_point(Point& point);
+bool influx_connection(const char* time_zone);
+bool influx_is_connected();
+bool influx_white_point(Point* point);
 
 // ----------------------------------------------------------------------------------------------------
 

@@ -9,6 +9,7 @@
 
 #include "my_timer.h"
 #include "storage.h"
+#include "influxdb_client.h"
 
 // GENERAL CONFIG ----------------------------------------------------------------------------------------------------
 
@@ -40,9 +41,9 @@
 // DATA CONFIG ----------------------------------------------------------------------------------------------------
 
 typedef struct {
-  Point     point;
-  my_time_t timer;
-}data_t;
+  Point*      point;
+  my_timer_t  timer;
+}gpio_data_t;
 
 enum index_poins
 {

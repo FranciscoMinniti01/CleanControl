@@ -20,7 +20,7 @@ typedef struct
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-bool set_data_storage(storage_t* s, void* d, size_t l, String k);
+void set_data_storage(storage_t* s, void* d, size_t l, String k);
 bool get_data(storage_t* s);
 bool seve_data(storage_t* s);
 

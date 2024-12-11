@@ -21,9 +21,9 @@ void influx_init(const char* url, const char* org, const char* bucket, const cha
   client = InfluxDBClient(url, org, bucket, token, cert);
 }
 
-bool influx_connection()
+bool influx_connection(const char* time_zone)
 {
-  timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
+  timeSync(time_zone, "pool.ntp.org", "time.nis.gov");
   if (client.validateConnection())
   {
     Serial.print("CONNECTED TO INFLUXDB: ");
@@ -38,15 +38,15 @@ bool influx_connection()
   }
 }
 
-bool is_influx_connected()
+bool influx_is_connected()
 {
   if(client.validateConnection()) return true;
   else return false;
 }
 
-bool influx_white_point(Point& point)
+bool influx_white_point(Point* point)
 {
-  if (!client.writePoint(point))
+  if (!client.writePoint(*point))
   {
     Serial.println("ERROR: InfluxDB write failed:   ");
     Serial.println(client.getLastErrorMessage());

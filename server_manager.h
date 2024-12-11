@@ -3,12 +3,14 @@
 
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
+#include "Print.h"
+#include "HardwareSerial.h"
+
 #include <WebServer.h>
 
 #include "wifi_manager.h"
-#include "config.h"
 
-// SPECIAL PARAMETERS ----------------------------------------------------------------------------------------------------
+// USER PARAMETERS ----------------------------------------------------------------------------------------------------
 
 #define NUM_SPECIAL_PARAM     2
 
@@ -21,12 +23,12 @@ typedef struct {
   String machine_id;
   String client_id;
   bool is_updated;
-}sv_param_t;
+}user_param_t;
 
 // FUNCTIONS ---------------------------------------------------------------------------------------------------- 
 
 void server_init();
-sv_param_t* get_special_param();
+user_param_t* get_special_param();
 
 // ----------------------------------------------------------------------------------------------------
 

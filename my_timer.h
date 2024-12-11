@@ -3,15 +3,19 @@
 
 // INCLUDE ----------------------------------------------------------------------------------------------------
 
+#include "Print.h"
+#include "HardwareSerial.h"
+
 #include "time.h"
 #include "esp32-hal-timer.h"
-#include "config.h"
+#include <vector>
 
 // TIMER CONFIG ----------------------------------------------------------------------------------------------------
 
-#define MAX_NUM_TIMERS        5
 #define TIME_FREC             1000000
-#define BASE_TIME_10mS        10000
+#define BASE_TIME             10000
+
+// DEFINES ----------------------------------------------------------------------------------------------------
 
 #define TIME_10mS             1
 #define TIME_60S              6000
@@ -21,20 +25,21 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-typedef int16_t my_time_t;
-
-typedef struct {
+typedef struct
+{
     uint16_t  conter;
     uint16_t  comparator;
     bool      flag;
-    int16_t   index = -1;
 } my_timer_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 bool timer_init();
-bool set_timer(uint16_t comparator);
-bool get_flag_timer(time_t index);
+void set_timer(my_timer_t* ptr, uint16_t comparator);
+void reset_timer(my_timer_t* ptr, uint16_t comparator);
+bool get_flag_timer(my_timer_t* ptr);
+void delete_timer(my_timer_t* ptr);
+void timer_deinit();
 
 // ----------------------------------------------------------------------------------------------------
 

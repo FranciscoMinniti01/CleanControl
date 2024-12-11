@@ -7,20 +7,19 @@
 hw_timer_t* timer    = NULL;
 bool flag            = true;
 
-my_timer_t my_timers[MAX_NUM_TIMERS];
+std::vector<my_timer_t*> my_timers;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 void timer_callback()
 {
-  for(uint16_t i = 0 ; i<MAX_NUM_TIMERS ; i++ )
+  for(my_timer_t* t : my_timers)
   {
-    if(my_timers[i].index < 0) continue;
-    my_timers[i].conter ++;
-    if(my_timers[i].comparator == my_timers[i].conter)
+    t->conter ++;
+    if(t->comparator == t->conter)
     {
-      my_timers[i].flag = true;
-      my_timers[i].conter = 0;
+      t->flag    = true;
+      t->conter  = 0;
     }
   }
 }
@@ -30,38 +29,43 @@ bool timer_init()
   timer = timerBegin(TIME_FREC);
   if(timer == NULL)
   {
-      Serial.println("ERROR: Timer init failed");
-      return false;
+    Serial.println("ERROR: Timer init failed");
+    return false;
   }
   timerAttachInterrupt(timer, &timer_callback);
-  timerAlarm(timer, BASE_TIME_10mS, true, 0);
+  timerAlarm(timer, BASE_TIME, true, 0);
   return true;
 }
 
-bool set_timer(uint16_t comparator)
+void set_timer(my_timer_t* ptr, uint16_t comparator)
 {
-  for(uint16_t i = 0 ; i<MAX_NUM_TIMERS ; i++ )
-  {
-    if(my_timers[i].index < 0)
-    {
-      my_timers[i].index = i;
-      my_timers[i].comparator = comparator;
-      my_timers[i].flag = false;
-      my_timers[i].conter = 0;
-      return true;
-    }
-  }
-  return false;
+  my_timers.push_back(ptr);
+  reset_timer(ptr,comparator);
 }
 
-bool get_flag_timer(time_t index)
+void reset_timer(my_timer_t* ptr, uint16_t comparator)
 {
-  if(index >= 0 && index<MAX_NUM_TIMERS)
-  {
-    bool flag = my_timers[index].flag;
-    my_timers[index].flag = false;
-    return flag;
-  } else return false;
+  ptr->comparator = comparator;
+  ptr->conter     = 0;
+  ptr->flag       = false;
+}
+
+bool get_flag_timer(my_timer_t* ptr)
+{
+  bool flag = ptr->flag;
+  ptr->flag = false;
+  return flag;
+}
+
+void delete_timer(my_timer_t* ptr)
+{
+  delete ptr;
+}
+
+void timer_deinit()
+{
+  my_timers.clear();
+  timerEnd(timer);
 }
 
 // ----------------------------------------------------------------------------------------------------
