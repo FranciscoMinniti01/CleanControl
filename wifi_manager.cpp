@@ -5,7 +5,6 @@
 // VARIABLES SERVER ----------------------------------------------------------------------------------------------------
 
 WebServer server(80);
-hdmi_root_t hdmi_root[MAX_HDMI_ROOT];
 
 // VARIABLES CREDENTIALS ----------------------------------------------------------------------------------------------------
 
@@ -14,6 +13,7 @@ storage_t credentials_storage[MAX_CREDENCIALES][2];
 
 // VARIABLES WIFI ----------------------------------------------------------------------------------------------------
 
+#define DEBUG_WIFI 1
 WiFiMulti wifiMulti; 
 
 IPAddress local_ip_AP(LOCAL_IP_1, LOCAL_IP_2, LOCAL_IP_3, LOCAL_IP_4);
@@ -24,16 +24,11 @@ static State_Wifi_t  WifiState  = WIFI_INIT;
 static State_AP_t    APState    = WIFI_AP_INIT;
 static State_STA_t   STAState   = WIFI_STA_INIT;
 
-static bool wifi_error          = false;            // Inidca si hay un error en las maquinas de estado, si esta en true todas las maquinas se van a deinit
-static bool wifi_is_connected   = false;            // Indica si el dispositivo esta conectado como cliente a una red wifi 
-
-static bool wifi_init           = false;            // Indica que se inicializo la libreria wifi
-
-static bool wifi_AP_init        = false;            // Indica que se inicializo el modo AP
-static bool wifi_server_init    = false;            // Indica que se inicializo el servidor
-
-static bool wifi_STA_init       = false;            // Indica que se inicializo el modo STA
-static bool wifi_STA_new_credentials = false;       // Indica que hay nuevas credenciales, se borraran todas y se armara nuevamente la lista
+static bool has_wifi_error      = false;            // Inidca si hay un error en las maquinas de estado, si esta en true todas las maquinas se van a deinit
+static bool is_wifi_connected   = false;            // Indica si el dispositivo esta conectado como cliente a una red wifi 
+static bool is_wifi_init        = false;            // Indica que se inicializo la libreria wifi
+static bool is_wifi_AP_init     = false;            // Indica que se inicializo el modo AP
+static bool is_wifi_STA_init    = false;            // Indica que se inicializo el modo STA
 
 // FUNCTIONS SERVER ----------------------------------------------------------------------------------------------------
 
@@ -44,54 +39,74 @@ void set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_)
 
 // FUNCTIONS CREDENTIALS ----------------------------------------------------------------------------------------------------
 
+bool register_credentials()
+{
+  uint8_t i = 0;
+  wifiMulti.APlistClean();
+  Serial.printf("DEBUG: register_credentials()\n");
+  for(i=0 ; i<3; i++)
+  {
+    Serial.printf("DEBUG: i = %d\n",i);
+    if (credentials[i].ssid[0] != 0)
+    {
+      Serial.printf("INFO: register credential %d\n",i);
+      if (credentials[i].password[0] == 0) Serial.printf("    with empty password\n");
+      if(!wifiMulti.addAP(credentials[i].ssid,credentials[i].password))
+      {
+        Serial.printf("ERROR: add credential %d failed\n",i);
+        has_wifi_error = true;
+      }
+      return true;
+    }
+    Serial.printf("DEBUG: i = %d\n",i);
+  }
+  return false;
+}
+
 void get_storage_credentials()
 {
+  Serial.printf("DEBUG: get_storage_credentials()\n");
   for(uint8_t i = 0; i<MAX_CREDENCIALES; i++)
   {
-    credentials_storage[i][0].data   = (void*)credentials[i].ssid;
-    credentials_storage[i][0].len    = MAX_LEN_CREDENCIALES;
-    credentials_storage[i][0].key    = KEY_CREDENTIAL_SSID + String(i);
+    set_data_storage( &(credentials_storage[i][INDEX_SSID]), 
+                      (void*)credentials[i].ssid,
+                      MAX_LEN_CREDENCIALES,
+                      KEY_CREDENTIAL_SSID + String(i) );
 
-    get_data(&credentials_storage[i][0]);
+    set_data_storage( &(credentials_storage[i][INDEX_PASSWORD]), 
+                      (void*)credentials[i].password,
+                      MAX_LEN_CREDENCIALES,
+                      KEY_CREDENTIAL_PASSWORD + String(i) );
 
-    credentials_storage[i][1].data   = (void*)credentials[i].password;
-    credentials_storage[i][1].len    = MAX_LEN_CREDENCIALES;
-    credentials_storage[i][1].key    = KEY_CREDENTIAL_PASSWORD + String(i);
-
-    get_data(&credentials_storage[i][1]);
+    get_data(&credentials_storage[i][INDEX_SSID]);
+    get_data(&credentials_storage[i][INDEX_PASSWORD]);
     
     if(credentials[i].ssid[0] != 0)
     {
-      #ifdef DEBUG_WIFI
-      Serial.println("INFO: Se obtuvieron credenciales");
-      #endif
+      Serial.println("INFO: Se obtuvieron credenciales de la memoria");
+      if(register_credentials())
+      {
+        Serial.printf("ERROR: can not register credentials"); 
+      }
     }
   }
 }
 
 bool set_credentials(String ssid, String password)
 {
-  bool flag     = false;
-  uint8_t index = 0;
-  static uint8_t last_index = 0;
+  Serial.printf("DEBUG: set_credentials()\n");
+  static uint8_t index = 0;
 
-  #ifdef DEBUG_WIFI
-  Serial.printf("INF: Set ssid=%s\n",ssid);
-  Serial.printf("INF: Set password=%s\n",password);
-  #endif
-
-  for(index = 0; index<MAX_CREDENCIALES; index++)
-  {
-    if(credentials[index].ssid[0] == 0)
-    {
-      flag = true;
-      break;
-    }
+  if(ssid.isEmpty())
+  {  
+    Serial.printf("ERROR: can not set empty ssid\n"); 
+    return false;
   }
+  if(password.isEmpty()) Serial.printf("Empty password\n"); 
 
-  if(!flag) index = (++last_index)%MAX_CREDENCIALES;
-
-  Serial.printf("INF: Set index = %d\n",index);
+  index++;
+  index = index%MAX_CREDENCIALES;
+  Serial.printf("INFO: Indice de la nueva credencial = %d\n",index);
 
   strncpy(credentials[index].ssid, ssid.c_str(), MAX_LEN_CREDENCIALES);
   credentials[index].ssid[MAX_LEN_CREDENCIALES-1] = '\0';
@@ -99,11 +114,24 @@ bool set_credentials(String ssid, String password)
   strncpy(credentials[index].password, password.c_str(), MAX_LEN_CREDENCIALES);
   credentials[index].password[MAX_LEN_CREDENCIALES-1] = '\0';
 
-  if(!seve_data(&credentials_storage[index][0])) return false;
-  if(!seve_data(&credentials_storage[index][1])) return false;
+  if(!seve_data(&credentials_storage[index][INDEX_SSID]))
+  {
+    Serial.printf("ERROR: can not seve ssid"); 
+    return false;
+  }
+  if(!seve_data(&credentials_storage[index][INDEX_PASSWORD]))
+  {
+    Serial.printf("ERROR: can not seve password"); 
+    return false;
+  }
 
-  wifi_STA_new_credentials = true;
+  if(!register_credentials())
+  {
+    Serial.printf("ERROR: can not register credentials"); 
+    return false;
+  }
 
+  Serial.printf("INFO: Configuracion de credenciales \n     ssid=%s \n     password=%s\n",ssid ,password);
   return true;
 }
 
@@ -260,8 +288,8 @@ void WiFi_manager()
   AP_stateMachine();
   STA_stateMachine();
 
-  if(WiFi.status() == WL_CONNECTED) wifi_is_connected = true;
-  else wifi_is_connected = false;
+  if(WiFi.status() == WL_CONNECTED) is_wifi_connected = true;
+  else is_wifi_connected = false;
 }
 
 void WiFi_stateMachine()
@@ -271,90 +299,77 @@ void WiFi_stateMachine()
     case WIFI_INIT:
       get_storage_credentials();                                                    // Busco credenciales guardadas
       WiFi.onEvent(WiFiEvent);                                                      // Configuro la callback de eventos
-      if(!WiFi.mode(WIFI_AP_STA)) Serial.println("ERROR: WiFi mode set failed");    // Pongo WiFi en modo Access Point y Estacion o cliente
-      wifi_init = true;
-      wifi_error = false;
-      WifiState = WIFI_READY;
+      if(!WiFi.mode(WIFI_AP_STA))                                                   // Pongo WiFi en modo Access Point y Estacion o cliente
+      {
+        Serial.println("ERROR: WiFi mode set failed");    
+      }
+      else
+      {
+        Serial.println("DEBUG: WiFi init");    
+        is_wifi_init    = true;
+        has_wifi_error  = false;
+        WifiState       = WIFI_READY;
+      }
       break; 
     
     case WIFI_READY:
-      if(wifi_error && !wifi_AP_init && !wifi_STA_init) WifiState = WIFI_DEINIT;
+      if(has_wifi_error && !is_wifi_AP_init && !is_wifi_STA_init) WifiState = WIFI_DEINIT;
       break;
 
     case WIFI_DEINIT:
-      Serial.println("INFO: WIFI DEINIT");
+      Serial.println("INFO: Wifi deinit");
       WiFi.mode(WIFI_MODE_NULL);
-      wifi_init = false;
-      WifiState = WIFI_INIT;
+      is_wifi_init  = false;
+      WifiState     = WIFI_INIT;
       break;
   }
 }
 
 void AP_stateMachine()
 {
-  bool AP_flag = false;
   switch (APState)
   {
     case WIFI_AP_INIT:
-      if(wifi_init)
+      if(is_wifi_init && !has_wifi_error)
       {
         if(WiFi.softAPConfig(local_ip_AP, gateway_AP, subnet_AP))
         {
-          if(WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP, false))
+          if(WiFi.softAP(SSID_AP, PASSWORD_AP, CHANNEL_AP, SSID_HIDDEN_AP, MAX_CONNECTION_AP, AP_CONF_FTM, AP_AUTH_MODE, AP_CIPHER_TYPE ))
           {
-            AP_flag = true;
             Serial.println(WiFi.softAPIP());
+            server.onNotFound( [](){ server.send(404, "text/plain", "Ruta no encontrada"); } );
+            server.begin();
+            Serial.println("DEBUG: AP init saccessfull");
+            is_wifi_AP_init = true;
+            APState         = WIFI_AP_READY;
           }
-          else Serial.println("ERROR: AP init failed");
-        }
-        else Serial.println("ERROR: soft ap config failed");
-        
-        if(!AP_flag)
-        {
-          APState     = WIFI_AP_DEINIT;
-          wifi_error  = !AP_flag;
+          else
+          {
+            Serial.println("ERROR: AP init failed");
+            has_wifi_error  = true;
+            APState         = WIFI_AP_DEINIT;
+          }
         }
         else
         {
-          wifi_AP_init  = true;
-          APState       = WIFI_AP_SERVER_INIT;
+          Serial.println("ERROR: soft ap config failed");
+          has_wifi_error  = true;
+          APState         = WIFI_AP_DEINIT;
         }
       }
       break; 
-        
-    case WIFI_AP_SERVER_INIT:
-      for(uint8_t i = 0 ; i<MAX_HDMI_ROOT ; i++)
-      {
-        if(hdmi_root[i].fun != NULL )
-        {
-          server.on(hdmi_root[i].root, hdmi_root[i].request, hdmi_root[i].fun);
-          AP_flag = true;
-        }
-      }
-      if(AP_flag)
-      {
-        server.begin();
-        wifi_server_init = true;
-      } 
-      APState = WIFI_AP_READY;
-      break;
 
     case WIFI_AP_READY:
-      if(wifi_server_init) server.handleClient();
-      if(wifi_error) APState = WIFI_AP_SERVER_DEINIT;
+      server.handleClient();
+      if(has_wifi_error) APState = WIFI_AP_DEINIT;
       break;
 
-    case WIFI_AP_SERVER_DEINIT:
-      server.close();
-      server.stop();
-      wifi_server_init  = false;
-      APState           = WIFI_AP_DEINIT;
-      break; 
-
     case WIFI_AP_DEINIT:
+      Serial.println("INFO: AP deinit");
+      server.close();
       WiFi.softAPdisconnect(false);
-      wifi_AP_init  = false;
-      APState       = WIFI_AP_INIT;
+      is_wifi_AP_init = false;
+      APState         = WIFI_AP_INIT;
       break; 
   }
 }
@@ -365,49 +380,26 @@ void STA_stateMachine()
   switch (STAState)
   {
     case WIFI_STA_INIT:
-      if(wifi_init)
+      if(is_wifi_init && !has_wifi_error)
       {
         wifiMulti.setStrictMode(true);          // Se conecta o mantiene un coneccion únicamente con las credenciales de la lista WiFiMulti proporcionada.
         wifiMulti.setAllowOpenAP(false);        // No permite la coneccion con cualquier red wifi abierta.
-        STAState = WIFI_STA_CLEAR_CREDENTIALS;
+        is_wifi_STA_init  = true;
+        STAState          = WIFI_STA_READY;
+        Serial.println("DEBUG: STA init");  
       }
-      break;
-
-    case WIFI_STA_CLEAR_CREDENTIALS:
-      wifiMulti.APlistClean();
-      STAState = WIFI_STA_ADD_CREDENTIALS;
-      break;
-
-    case WIFI_STA_ADD_CREDENTIALS:
-      for (int i = 0; i < MAX_CREDENCIALES; i++)
-      {
-        if (credentials[i].ssid[0] != 0)
-        {
-          Serial.printf("INF: Add credential %d\n",i);
-          if (credentials[i].password[0] == 0)  Serial.printf("INFO: password %d empty\n",i);
-          if(!wifiMulti.addAP(credentials[i].ssid,credentials[i].password))
-          {
-            Serial.printf("ERROR: add credential %d failed\n",i);
-            wifi_error = true;
-          }
-          wifi_STA_init = true;
-        }
-      }
-      STAState = WIFI_STA_READY;
-      wifi_STA_new_credentials = false;
       break;
     
     case WIFI_STA_READY:
-      if(wifi_STA_init) wifiMulti.run();
-      if(wifi_STA_new_credentials) STAState = WIFI_STA_CLEAR_CREDENTIALS;
-      if(wifi_error) STAState = WIFI_STA_DEINIT; 
+      wifiMulti.run();
+      if(has_wifi_error) STAState = WIFI_STA_DEINIT; 
       break;
     
     case WIFI_STA_DEINIT:
-      wifiMulti.APlistClean();
+      Serial.println("DEBUG: STA deinit");  
       if(!WiFi.disconnect()) Serial.println("ERROR: STA disconnect failed");
-      wifi_STA_init = false;
-      STAState = WIFI_STA_INIT;
+      is_wifi_STA_init  = false;
+      STAState          = WIFI_STA_INIT;
       break;  
   }
 }
@@ -418,9 +410,9 @@ credentials_t* get_credentials() { return credentials; }
 
 float getRSSI() { return WiFi.RSSI(); }
 
-bool getWifiStatus() { return wifi_is_connected; }
+bool getWifiStatus() { return is_wifi_connected; }
 
-bool getWiFiError() { return wifi_error; }
+bool getWiFiError() { return has_wifi_error; }
 
 String getSSID() { return WiFi.SSID(); }
 

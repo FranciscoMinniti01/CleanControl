@@ -11,24 +11,6 @@
 #include "storage.h"
 #include "influxdb_client.h"
 
-// GENERAL CONFIG ----------------------------------------------------------------------------------------------------
-
-#define DEBUG_WIFI            1
-#define DEBUG_SERVER          1
-#define DEBUG_INFLUX          1
-#define DEBUG_DATA            1
-#define DEBUG_APP             1
-
-// WIFI CONFIG ----------------------------------------------------------------------------------------------------
-
-#define MAX_CREDENCIALES      3   // Maximo numero de credenciales wifi que se pueden almacenar en el dispositivo
-#define MAX_LEN_CREDENCIALES  30  // Largo maximo de las credenciales wifi que se pueden almacenar en el dispositivo
-
-// ACCESS POINT CONFIG ----------------------------------------------------------------------------------------------------
-
-#define SSID_AP               "CleanControlAP"
-#define PASSWORD_AP           "12345678"
-#define MAX_CONNECTION_AP     1
 
 // INFLUXDB CONFIG ----------------------------------------------------------------------------------------------------
 

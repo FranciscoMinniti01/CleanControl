@@ -3,6 +3,7 @@
 
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
+#include <string>
 #include "Print.h"
 #include "HardwareSerial.h"
 
@@ -10,19 +11,20 @@
 
 #include "wifi_manager.h"
 
-// USER PARAMETERS ----------------------------------------------------------------------------------------------------
-
-#define NUM_SPECIAL_PARAM     2
+// DEFINES ----------------------------------------------------------------------------------------------------
 
 #define KEY_SPECIAL_PARAM     "SP"
 
+// USER PARAMETERS ----------------------------------------------------------------------------------------------------
+
+#define NUM_SPECIAL_PARAM     2
 #define INDEX_MACHINE_ID      0
 #define INDEX_CLIENT_ID       1
 
 typedef struct {
-  String machine_id;
-  String client_id;
-  bool is_updated;
+  String machine_id = "";
+  String client_id  = "";
+  bool is_updated   = false;
 }user_param_t;
 
 // FUNCTIONS ---------------------------------------------------------------------------------------------------- 

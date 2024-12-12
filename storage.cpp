@@ -17,9 +17,11 @@ void set_data_storage(storage_t* s, void* d, size_t l, String k)
 
 bool get_data(storage_t* s)
 {
+  Serial.printf("DEBUG: get_data()\n");
+  bool flag = true;
   if( !preferences.begin(NAME_SPACE) )
   { 
-    Serial.println("ERROR: Preferences begin failed");
+    Serial.println("ERROR: Get preferences begin failed");
     return false;
   }
 
@@ -27,28 +29,30 @@ bool get_data(storage_t* s)
   {
     char* char_ptr = (char*)s->data;
     for(uint8_t i = 0; i<s->len ; i++) char_ptr[i] = 0;
-    return false;
+    flag = false;
   }
 
   preferences.end();
-  return true;
+  return flag;
 }
 
 bool seve_data(storage_t* s)
 {
+  Serial.printf("DEBUG: seve_data()\n");
+  bool flag = true;
   if( !preferences.begin(NAME_SPACE) ) { 
-    Serial.println("ERROR: Preferences begin failed");
+    Serial.println("ERROR: Save preferences begin failed");
     return false;
   }
 
   if( !preferences.putBytes( (s->key).c_str(), s->data, s->len))
   {
     Serial.println("ERROR: Preferences putBytes failed");
-    return false;
+    flag = false;
   }
 
   preferences.end();
-  return true;
+  return flag;
 }
 
 // ----------------------------------------------------------------------------------------------------

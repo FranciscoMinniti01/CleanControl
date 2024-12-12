@@ -1,3 +1,5 @@
+// APP MAIN ----------------------------------------------------------------------------------------------------
+/*
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
 #include "wifi_manager.h"
@@ -15,7 +17,7 @@ user_param_t* sv_param        = NULL;
 
 gpio_data_t data[NUMBER_OF_DATA];
 
-// MAIN FUNCTIONS ----------------------------------------------------------------------------------------------------
+// FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 void setup()
 {
@@ -76,6 +78,63 @@ void loop()
 
   }
 }
+*/
+// APP MAIN ----------------------------------------------------------------------------------------------------
 
 
 
+// TEST WIFI MAIN ----------------------------------------------------------------------------------------------------
+/*
+#include "wifi_manager.h"
+#include "server_manager.h"
+bool is_wifi_connected      = false;
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println("\n\n\n\n\n---------- TEST WIFI MAIN ----------");
+
+  server_init();
+}
+
+void loop()
+{
+  WiFi_manager();
+  if(getWifiStatus())
+  {
+    Serial.println("wifi conectado");
+  }
+}
+*/
+// TEST WIFI MAIN ----------------------------------------------------------------------------------------------------
+
+
+
+// TEST STORAGE MAIN ----------------------------------------------------------------------------------------------------
+/*
+#include <string>
+#include "storage.h"
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println("\n\n\n\n\n---------- APP TEST STORAGE ----------");
+
+  String test = "Funciona";
+  storage_t storage_test;
+  
+  set_data_storage( &storage_test, (void*)test.c_str(), 8, "KeyTest" ); //sizeof((void*)test.c_str()), "KeyTest" );
+  
+  if(seve_data(&storage_test))Serial.println("Se guardo informacion con exito");
+  else Serial.println("Save fallo, no se guardo la informacion");
+  Serial.printf("test = %S\n",test);
+
+  if(get_data(&storage_test)) Serial.println("Se obtubo informacion almacenada");
+  else Serial.println("Get fallo, no se obtubo informacion almacenada");
+  Serial.printf("test = %S\n",test);
+}
+
+void loop(){}
+
+*/
+// TEST STORAGE MAIN ----------------------------------------------------------------------------------------------------

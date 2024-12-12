@@ -6,13 +6,14 @@
 
 extern WebServer server;
 
-user_param_t special_params;
+user_param_t user_param;
 storage_t storage_param[NUM_SPECIAL_PARAM];
 
 // FUNCTIONS ROOT ----------------------------------------------------------------------------------------------------
 
 void FormRoot()
 {
+  Serial.printf("DEBUG: FormRoot()\n");
   String html = R"rawliteral(
       <!DOCTYPE html>
       <html>
@@ -120,12 +121,12 @@ void FormRoot()
 
   html += "            <h2>Configuration</h2>";
 
-  // USER PARAMETERS ----------------------------------------
+  // USER PARAMETERS ------------------------
   html += "            <label>Machine ID:</label>";
-  html += "            <input type=\"text\" name=\"machineid\" value=\"" + special_params.machine_id + "\">";
+  html += "            <input type=\"text\" name=\"machineid\" value=\"" + user_param.machine_id + "\">";
   // ----------------------------------------
   html += "            <label>Client ID:</label>";
-  html += "            <input type=\"text\" name=\"clientid\" value=\"" + special_params.client_id + "\">";
+  html += "            <input type=\"text\" name=\"clientid\" value=\"" + user_param.client_id + "\">";
   // ----------------------------------------
 
   html += R"rawliteral(            
@@ -141,6 +142,8 @@ void FormRoot()
 
 void FormSubmitRoot()
 {
+  Serial.printf("DEBUG: FormSubmitRoot()\n");
+
   String html = R"rawliteral(
         <!DOCTYPE html>
         <html lang="en">
@@ -184,6 +187,7 @@ void FormSubmitRoot()
         </html>
   )rawliteral";
 
+  // FRAN PROBAR EL METODO .hasArg nota: Arg siempre devuelve string y hasArg bool
   for(uint8_t i = 0; i<MAX_CREDENCIALES; i++)
   {
     if(server.arg("ssid"+String(i+1)))
@@ -196,22 +200,22 @@ void FormSubmitRoot()
     else Serial.printf("INFO: Ssid %d vacia\n",i+1);       
   }   
   
-  // USER PARAMETERS ----------------------------------------
+  // USER PARAMETERS ------------------------
   if(server.arg("machineid"))
   {
-    Serial.printf("INFO: Machine ID ingresada\n");
-    special_params.machine_id = server.arg("machineid");
+    user_param.machine_id = server.arg("machineid");
+    Serial.printf("INFO: Machine ID ingresada: %s\n",user_param.machine_id);
     if(! seve_data(&storage_param[INDEX_MACHINE_ID])) Serial.println("EROOR: Special param not save");
-    special_params.is_updated = true;
+    user_param.is_updated = true;
   }
   else Serial.printf("INFO: Machine ID vacia\n");
   // ----------------------------------------
   if(server.arg("clientid"))  
   {
-    Serial.printf("INFO: Client ID ingresada\n");
-    special_params.client_id  = server.arg("clientid");
+    user_param.client_id  = server.arg("clientid");
+    Serial.printf("INFO: Client ID ingresada: %s\n",user_param.client_id);
     if(! seve_data(&storage_param[INDEX_CLIENT_ID])) Serial.println("EROOR: Special param not save");
-    special_params.is_updated = true;
+    user_param.is_updated = true;
   }
   else Serial.printf("INFO: Client ID vacia\n");
   // ----------------------------------------
@@ -223,6 +227,8 @@ void FormSubmitRoot()
 
 void server_init()
 {
+  Serial.printf("DEBUG: server_init()\n");
+
   // ROOT ----------------------------------------
   set_hdmi_root("/",HTTP_GET,FormRoot);
   // ----------------------------------------
@@ -230,21 +236,23 @@ void server_init()
   // ----------------------------------------
 
   // USER PARAMETERS ----------------------------------------
-  storage_param[INDEX_MACHINE_ID].data = (void*)special_params.machine_id.c_str();
-  storage_param[INDEX_MACHINE_ID].len = sizeof(special_params.machine_id);
-  storage_param[INDEX_MACHINE_ID].key = KEY_SPECIAL_PARAM + String(INDEX_MACHINE_ID);
-  get_data(&storage_param[INDEX_MACHINE_ID]);
+  set_data_storage( &storage_param[INDEX_MACHINE_ID],
+                    (void*)user_param.machine_id.c_str(),
+                    sizeof(user_param.machine_id),
+                    KEY_SPECIAL_PARAM + String(INDEX_MACHINE_ID) );
+  if(!get_data( &storage_param[INDEX_MACHINE_ID] )) user_param.machine_id = "";
   // ----------------------------------------
-  storage_param[INDEX_CLIENT_ID].data = (void*)special_params.client_id.c_str();
-  storage_param[INDEX_CLIENT_ID].len = sizeof(special_params.client_id);
-  storage_param[INDEX_CLIENT_ID].key = KEY_SPECIAL_PARAM + String(INDEX_CLIENT_ID);
-  get_data(&storage_param[INDEX_CLIENT_ID]);
+  set_data_storage( &storage_param[INDEX_CLIENT_ID],
+                    (void*)user_param.client_id.c_str(), 
+                    sizeof(user_param.client_id),
+                    KEY_SPECIAL_PARAM + String(INDEX_CLIENT_ID) );
+  if(!get_data( &storage_param[INDEX_CLIENT_ID] )) user_param.client_id = "";
   // ----------------------------------------
 }
 
 user_param_t* get_special_param()
 { 
-  return &special_params;
+  return &user_param;
 }
 
 
