@@ -153,7 +153,7 @@ uint16_t get_analog_pin(uint8_t pin)
   {
     if(pin == analog_pin[i].pin) return analog_pin[i].average;
   }
-  return NULL;
+  return 0;
 }
 
 // ----------------------------------------------------------------------------------------------------

@@ -42,11 +42,11 @@ void set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_)
 bool register_credentials()
 {
   uint8_t i = 0;
+  bool flag = false;
   wifiMulti.APlistClean();
   Serial.printf("DEBUG: register_credentials()\n");
   for(i=0 ; i<3; i++)
   {
-    Serial.printf("DEBUG: i = %d\n",i);
     if (credentials[i].ssid[0] != 0)
     {
       Serial.printf("INFO: register credential %d\n",i);
@@ -54,17 +54,17 @@ bool register_credentials()
       if(!wifiMulti.addAP(credentials[i].ssid,credentials[i].password))
       {
         Serial.printf("ERROR: add credential %d failed\n",i);
-        has_wifi_error = true;
+        //has_wifi_error = true;
       }
-      return true;
+      else flag = true;
     }
-    Serial.printf("DEBUG: i = %d\n",i);
   }
-  return false;
+  return flag;
 }
 
 void get_storage_credentials()
 {
+  bool flag = false;
   Serial.printf("DEBUG: get_storage_credentials()\n");
   for(uint8_t i = 0; i<MAX_CREDENCIALES; i++)
   {
@@ -83,19 +83,17 @@ void get_storage_credentials()
     
     if(credentials[i].ssid[0] != 0)
     {
-      Serial.println("INFO: Se obtuvieron credenciales de la memoria");
-      if(register_credentials())
-      {
-        Serial.printf("ERROR: can not register credentials"); 
-      }
+      flag = true;
+      Serial.printf("INFO: Se obtuvieron la credencial %d:\n     ssid=%s\n     password=%s\n",i,credentials[i].ssid ,credentials[i].password);
     }
   }
+  if(flag) if(!register_credentials()) Serial.printf("ERROR: can not register credentials\n"); 
 }
 
 bool set_credentials(String ssid, String password)
 {
   Serial.printf("DEBUG: set_credentials()\n");
-  static uint8_t index = 0;
+  static uint8_t index = -1;
 
   if(ssid.isEmpty())
   {  
@@ -116,22 +114,22 @@ bool set_credentials(String ssid, String password)
 
   if(!seve_data(&credentials_storage[index][INDEX_SSID]))
   {
-    Serial.printf("ERROR: can not seve ssid"); 
+    Serial.printf("ERROR: can not seve ssid\n"); 
     return false;
   }
   if(!seve_data(&credentials_storage[index][INDEX_PASSWORD]))
   {
-    Serial.printf("ERROR: can not seve password"); 
+    Serial.printf("ERROR: can not seve password\n"); 
     return false;
   }
 
   if(!register_credentials())
   {
-    Serial.printf("ERROR: can not register credentials"); 
+    Serial.printf("ERROR: can not register credentials\n"); 
     return false;
   }
 
-  Serial.printf("INFO: Configuracion de credenciales \n     ssid=%s \n     password=%s\n",ssid ,password);
+  Serial.printf("INFO: Configuracion de credenciales\n     ssid=%s \n     password=%s\n",credentials[index].ssid ,credentials[index].password);
   return true;
 }
 
@@ -408,7 +406,7 @@ void STA_stateMachine()
 
 credentials_t* get_credentials() { return credentials; }
 
-float getRSSI() { return WiFi.RSSI(); }
+float getRSSI() {  return WiFi.RSSI(); }
 
 bool getWifiStatus() { return is_wifi_connected; }
 

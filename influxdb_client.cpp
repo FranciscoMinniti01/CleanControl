@@ -6,7 +6,7 @@
 
 InfluxDBClient client;
 
-// POINT ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// POINT ----------------------------------------------------------------------------------------------------
 
 /*
 point.clearFields();
@@ -14,7 +14,7 @@ point.addTag(String(tag),value);
 point.addField(String(fields),value);
 */
 
-// INFLUXDB ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// INFLUXDB ----------------------------------------------------------------------------------------------------
 
 void influx_init(const char* url, const char* org, const char* bucket, const char* token, const char* cert)
 {
@@ -26,13 +26,13 @@ bool influx_connection(const char* time_zone)
   timeSync(time_zone, "pool.ntp.org", "time.nis.gov");
   if (client.validateConnection())
   {
-    Serial.print("CONNECTED TO INFLUXDB: ");
+    Serial.print("INFO: Connected to InfluxDB:\n     ");
     Serial.println(client.getServerUrl());
     return true;
   }
   else
   {
-    Serial.println("ERROR: InfluxDB connection failed:    ");
+    Serial.print("ERROR: InfluxDB connection failed:\n     ");
     Serial.println(client.getLastErrorMessage());
     return false;
   }
@@ -46,9 +46,10 @@ bool influx_is_connected()
 
 bool influx_white_point(Point* point)
 {
+  Serial.print("DEBUGGGGG: 5\n"); 
   if (!client.writePoint(*point))
   {
-    Serial.println("ERROR: InfluxDB write failed:   ");
+    Serial.print("ERROR: InfluxDB write failed:\n     ");
     Serial.println(client.getLastErrorMessage());
     return false;
   }

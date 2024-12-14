@@ -6,7 +6,7 @@
 
 extern WebServer server;
 
-user_param_t user_param;
+static user_param_t user_param;
 storage_t storage_param[NUM_SPECIAL_PARAM];
 
 // FUNCTIONS ROOT ----------------------------------------------------------------------------------------------------
@@ -241,12 +241,14 @@ void server_init()
                     sizeof(user_param.machine_id),
                     KEY_SPECIAL_PARAM + String(INDEX_MACHINE_ID) );
   if(!get_data( &storage_param[INDEX_MACHINE_ID] )) user_param.machine_id = "";
+  else user_param.is_updated = true;
   // ----------------------------------------
   set_data_storage( &storage_param[INDEX_CLIENT_ID],
                     (void*)user_param.client_id.c_str(), 
                     sizeof(user_param.client_id),
                     KEY_SPECIAL_PARAM + String(INDEX_CLIENT_ID) );
   if(!get_data( &storage_param[INDEX_CLIENT_ID] )) user_param.client_id = "";
+  else user_param.is_updated = true;
   // ----------------------------------------
 }
 
@@ -255,4 +257,4 @@ user_param_t* get_special_param()
   return &user_param;
 }
 
-
+// ----------------------------------------------------------------------------------------------------

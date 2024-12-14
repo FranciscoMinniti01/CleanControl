@@ -17,7 +17,6 @@ void set_data_storage(storage_t* s, void* d, size_t l, String k)
 
 bool get_data(storage_t* s)
 {
-  Serial.printf("DEBUG: get_data()\n");
   bool flag = true;
   if( !preferences.begin(NAME_SPACE) )
   { 
@@ -38,7 +37,6 @@ bool get_data(storage_t* s)
 
 bool seve_data(storage_t* s)
 {
-  Serial.printf("DEBUG: seve_data()\n");
   bool flag = true;
   if( !preferences.begin(NAME_SPACE) ) { 
     Serial.println("ERROR: Save preferences begin failed");
