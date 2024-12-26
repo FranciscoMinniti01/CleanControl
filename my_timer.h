@@ -5,10 +5,10 @@
 
 #include "Print.h"
 #include "HardwareSerial.h"
+#include <vector>
 
 #include "time.h"
 #include "esp32-hal-timer.h"
-#include <vector>
 
 // TIMER CONFIG ----------------------------------------------------------------------------------------------------
 
@@ -23,23 +23,26 @@
 #define TIME_10S              1000
 #define TIME_1S               100
 
+typedef void (*cb_timer)();
+
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 typedef struct
 {
-    uint16_t  conter;
-    uint16_t  comparator;
-    bool      flag;
-} my_timer_t;
+    uint16_t      conter;
+    uint16_t      comparator;
+    bool          flag;
+    cb_timer      cb;
+}my_timer_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 bool timer_init();
-void set_timer(my_timer_t* ptr, uint16_t comparator);
+void timer_deinit();
+
+void set_timer(my_timer_t* ptr, uint16_t comparator, cb_timer cb);
 void reset_timer(my_timer_t* ptr, uint16_t comparator);
 bool get_flag_timer(my_timer_t* ptr);
-void delete_timer(my_timer_t* ptr);
-void timer_deinit();
 
 // ----------------------------------------------------------------------------------------------------
 

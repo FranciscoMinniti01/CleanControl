@@ -20,6 +20,7 @@ void timer_callback()
     {
       t->flag    = true;
       t->conter  = 0;
+      if(t->cb != NULL) t->cb();
     }
   }
 }
@@ -37,10 +38,11 @@ bool timer_init()
   return true;
 }
 
-void set_timer(my_timer_t* ptr, uint16_t comparator)
+void set_timer(my_timer_t* ptr, uint16_t comparator, cb_timer cb)
 {
   my_timers.push_back(ptr);
   reset_timer(ptr,comparator);
+  if(cb != NULL) ptr->cb = cb;
 }
 
 void reset_timer(my_timer_t* ptr, uint16_t comparator)
@@ -55,11 +57,6 @@ bool get_flag_timer(my_timer_t* ptr)
   bool flag = ptr->flag;
   ptr->flag = false;
   return flag;
-}
-
-void delete_timer(my_timer_t* ptr)
-{
-  delete ptr;
 }
 
 void timer_deinit()

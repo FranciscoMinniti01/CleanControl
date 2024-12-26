@@ -11,43 +11,45 @@
 #include "influxdb_client.h"
 #include "wifi_manager.h"
 #include "server_manager.h"
-//#include "gpio_data.h"
+#include "gpio_data.h"
+
+// DEFINES ----------------------------------------------------------------------------------------------------
+
+typedef struct {
+  uint16_t      id;
+  my_timer_t    timer;
+}data_t;
 
 // INFLUXDB CONFIG ----------------------------------------------------------------------------------------------------
 
 #define INFLUXDB_URL          "http://149.78.55.22:10010"
-#define INFLUXDB_ORG          "84c63ebe8b1b2dd6"      
-#define INFLUXDB_BUCKET       "Test"      
-#define INFLUXDB_TOKEN        "CLXk6Wa3zif4lsBb4dV4X67oxRCfGxZ9wykmpoRlFYKFkw61ijCkqHH7JZ5XYz8T7vtp7qpb2CdBD6V2AGXXBQ=="
+#define INFLUXDB_ORG          "7a51ffbe1c65ce0f"      
+#define INFLUXDB_BUCKET       "cleancontrol"      
+#define INFLUXDB_TOKEN        "58lWlntgNVpzfnK91ZUajQlOkm9z7fmYMMM4YwT2A7JXbaOQiUkD49f0Tb4FarHtNHY6T4q6G9xzs_ZpNi--9A=="
 #define TZ_INFO               "UTC-3" //Time zone info
 
 // DATA CONFIG ----------------------------------------------------------------------------------------------------
 
-//GLOBAL TAGS
-#define TG_ID_DEVICE         "MAQUINA"
-#define TG_ID_CLIENTE        "CLIENTE"
+// GLOBAL TAGS ----------------------------------------
+#define TG_ID_DEVICE          "MAQUINA"
+#define TG_ID_CLIENTE         "CLIENTE"
+// ----------------------------------------
 
-typedef struct {
-  Point*       point;
-  my_timer_t  timer;
-}gpio_data_t;
-
-// DATA -----------------------------------
+// DATA ----------------------------------------
 #define NUMBER_OF_DATA        1
-
-enum index_poins
+enum data_index
 {
   D_WIFI,
   D_ONOFF
 };
 // ----------------------------------------
 
-// DATA -----------------------------------
-#define M_WIFI          "WIFI"
-#define T_WIFI_SSID     "SSID"
-#define F_WIFI_RSSI     "RSSI"
-#define TIME_D_WIFI     TIME_60S
-// ----------------------------------------
+// D_WIFI ----------------------------------------
+#define M_D_WIFI              "WIFI"
+#define T_D_WIFI_SSID         "SSID"
+#define F_D_WIFI_RSSI         "RSSI"
+#define TIME_D_WIFI           TIME_30S
+// D_ONOFF ----------------------------------------
 #define MENSUREMENT_ONOFF     "ONOFF"
 #define FIELT_ONOFF_STATE     "State"
 #define FIELT_ONOFF_TON       "TON"

@@ -14,8 +14,8 @@ my_timer_t timer_save;
 
 void gpio_data_init()
 {
-  set_timer(&timer_input, TIME_TO_INPUT);
-  set_timer(&timer_save,  TIME_TO_SAVE);
+  set_timer(&timer_input, TIME_TO_INPUT, NULL);
+  set_timer(&timer_save,  TIME_TO_SAVE, NULL);
 
   // DIGITAL PIN -----------------------
   digital_pin[0].pin  = DIGITAL_PIN_CERO;
