@@ -34,7 +34,7 @@ void add_Field(uint16_t id, String field, uint8_t value )   { ptr_points[id]->ad
 bool influx_white_point(uint16_t id)
 {
   if(client == NULL) return false;
-  if ( !client->writePoint( *(ptr_points[0]) ) )
+  if ( !client->writePoint( *(ptr_points[id]) ) )
   {
     Serial.print("ERROR: InfluxDB write failed:\n     ");
     Serial.println(client->getLastErrorMessage());
