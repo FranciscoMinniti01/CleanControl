@@ -15,7 +15,7 @@
 // GPIO DATA CONFIG ----------------------------------------------------------------------------------------------------
 
 // DIGITAL PIN -----------------------
-#define NUMBER_OF_DIGITAL_PIN 3
+#define NUMBER_OF_DIGITAL_PIN 1
 #define DIGITAL_PIN_CERO      15
 #define DIGITAL_PIN_UNO       16
 #define DIGITAL_PIN_DOS       17
@@ -39,7 +39,6 @@
 typedef struct 
 {
   uint8_t   pin;
-  bool      last_state;
   uint8_t   counter;
   bool      state;
   uint16_t  time_state[2];
@@ -59,8 +58,8 @@ typedef struct
 
 void gpio_data_init();
 void gpio_data_control();
-bool get_digital_pin(uint8_t pin);
-uint16_t get_analog_pin(uint8_t pin);
+digital_pin_t* get_digital_pin(uint8_t pin);
+analog_pin_t* get_analog_pin(uint8_t pin);
 
 // ----------------------------------------------------------------------------------------------------
 

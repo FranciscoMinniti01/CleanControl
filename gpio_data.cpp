@@ -19,8 +19,8 @@ void gpio_data_init()
 
   // DIGITAL PIN -----------------------
   digital_pin[0].pin  = DIGITAL_PIN_CERO;
-  digital_pin[1].pin  = DIGITAL_PIN_UNO;
-  digital_pin[2].pin  = DIGITAL_PIN_DOS;
+  //digital_pin[1].pin  = DIGITAL_PIN_UNO;
+  //digital_pin[2].pin  = DIGITAL_PIN_DOS;
   // ANALOG PIN ------------------------
   analog_pin[0].pin   = ANALOG_PIN_CERO;
   // -----------------------------------
@@ -61,21 +61,19 @@ void digital_data_control()
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
     auxiliar_digital_state = digitalRead(digital_pin[i].pin);
-    if(auxiliar_digital_state == digital_pin[i].last_state)
+
+    if(auxiliar_digital_state != digital_pin[i].state)
     {
       digital_pin[i].counter ++;
       if(digital_pin[i].counter >= COUNTER_COMPARATOR)
       {
         digital_pin[i].state    = auxiliar_digital_state;
-        digital_pin[i].time_state[digital_pin[i].state] = 0; // Es importante que este arriba de digital_pin[i].state = auxiliar_digital_state; ya que pone en cero el estado anterior
+        digital_pin[i].time_state[digital_pin[i].state] = 0;
         digital_pin[i].counter  = 0;
       }
     }
-    else
-    {
-      digital_pin[i].last_state = auxiliar_digital_state;
-      digital_pin[i].counter = 0;
-    }
+    else digital_pin[i].counter = 0;
+
     digital_pin[i].time_state[digital_pin[i].state] ++;
     digital_pin[i].total_time_state[digital_pin[i].state] ++;
   }
@@ -101,7 +99,7 @@ void analog_data_control()
     if(analog_read_index >= COUNTER_COMPARATOR)
     {
       auxiliar_analog_flag = true;
-      analog_read_index=0;
+      analog_read_index    = 0;
     }
 
     analog_read_counter = 0;
@@ -132,26 +130,26 @@ void gpio_data_control()
   }
   if(get_flag_timer(&timer_save))
   {
-    if(save_data_control()) Serial.println("ERROR: save gpio data failed");
+    if(!save_data_control()) Serial.println("ERROR: save gpio data failed");
   }
 }
 
 // FUNCTIONS GET ----------------------------------------------------------------------------------------------------
 
-bool get_digital_pin(uint8_t pin)
+digital_pin_t* get_digital_pin(uint8_t pin)
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
-    if(pin == digital_pin[i].pin) return digital_pin[i].state;
+    if(pin == digital_pin[i].pin) return &digital_pin[i];
   }
   return NULL;
 }
 
-uint16_t get_analog_pin(uint8_t pin)
+analog_pin_t* get_analog_pin(uint8_t pin)
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
-    if(pin == analog_pin[i].pin) return analog_pin[i].average;
+    if(pin == analog_pin[i].pin) return &analog_pin[i];
   }
   return 0;
 }
