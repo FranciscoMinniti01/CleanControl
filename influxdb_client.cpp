@@ -24,11 +24,12 @@ void clear_Fields(uint16_t id) { ptr_points[id]->clearFields(); }
 
 void clear_Tags(uint16_t id) { ptr_points[id]->clearTags(); }
 
-void add_Field(uint16_t id, String field, String value) { ptr_points[id]->addField( field.c_str() , value.c_str() ); }
-void add_Field(uint16_t id, String field, int value   ) { ptr_points[id]->addField( field.c_str() , value ); }
-void add_Field(uint16_t id, String field, char value  ) { ptr_points[id]->addField( field.c_str() , value ); }
-void add_Field(uint16_t id, String field, bool value  ) { ptr_points[id]->addField( field.c_str() , value ); }
-void add_Field(uint16_t id, String field, float value ) { ptr_points[id]->addField( field.c_str() , value ); }
+void add_Field(uint16_t id, String field, String value )    { ptr_points[id]->addField( field.c_str() , value.c_str() ); }
+void add_Field(uint16_t id, String field, bool value )      { ptr_points[id]->addField( field.c_str() , value ); }
+void add_Field(uint16_t id, String field, float value )     { ptr_points[id]->addField( field.c_str() , value ); }
+void add_Field(uint16_t id, String field, uint32_t value )  { ptr_points[id]->addField( field.c_str() , value ); }
+void add_Field(uint16_t id, String field, uint16_t value )  { ptr_points[id]->addField( field.c_str() , value ); }
+void add_Field(uint16_t id, String field, uint8_t value )   { ptr_points[id]->addField( field.c_str() , value ); }
 
 bool influx_white_point(uint16_t id)
 {

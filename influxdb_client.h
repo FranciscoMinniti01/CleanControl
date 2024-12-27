@@ -22,11 +22,12 @@ void clear_Fields(uint16_t id);
 
 void clear_Tags(uint16_t id);
 
-void add_Field(uint16_t id, String field, String value);
-void add_Field(uint16_t id, String field, int value   );
-void add_Field(uint16_t id, String field, char value  );
-void add_Field(uint16_t id, String field, bool value  );
+void add_Field(uint16_t id, String field, String value );
+void add_Field(uint16_t id, String field, bool value );
 void add_Field(uint16_t id, String field, float value );
+void add_Field(uint16_t id, String field, uint32_t value );
+void add_Field(uint16_t id, String field, uint16_t value );
+void add_Field(uint16_t id, String field, uint8_t value );
 
 bool influx_white_point(uint16_t id);
 
