@@ -51,8 +51,8 @@ void loop()
         }
         clear_Fields(data[D_WIFI].id);
         add_Field(data[D_WIFI].id, F_D_WIFI_RSSI, getRSSI());
-        if ( !influx_white_point(data[D_WIFI].id) ) Serial.print("ERROR: Wifi data can't sent\n");
-        else Serial.print("INFO: Wifi data sent\n");
+        //if ( !influx_white_point(data[D_WIFI].id) ) Serial.print("ERROR: Wifi data can't sent\n");
+        //else Serial.print("INFO: Wifi data sent\n");
       }
       // D_ONOFF ----------------------------------------
       if( get_flag_timer( &(data[D_ONOFF].timer) ) )

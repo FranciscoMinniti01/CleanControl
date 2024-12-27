@@ -45,8 +45,8 @@ typedef struct {
 #define NUMBER_OF_DATA        2
 enum data_index
 {
-  D_WIFI,
-  D_ONOFF
+  D_ONOFF,
+  D_WIFI
 };
 // ----------------------------------------
 

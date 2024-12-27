@@ -4,36 +4,35 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-InfluxDBClient*       client = NULL;
-std::vector<Point*>   ptr_points;
-static uint16_t       points_index = 0;
-static const char*    time_zone;
+InfluxDBClient*     client = NULL;
+Point*              ptr_point = NULL;
+static const char*  time_zone;
 
 // FUNCTIONS POINT ----------------------------------------------------------------------------------------------------
 
-uint16_t set_point(String mensurement)
-{
-  Point* aux_point = new Point(mensurement.c_str());
-  ptr_points.push_back(aux_point);
-  return points_index ++;
+void set_Point( String mensurement )
+{ 
+  ptr_point = new Point(mensurement.c_str());
+  if(ptr_point != NULL)
+  {
+    ptr_point->clearFields(); 
+    ptr_point->clearTags();
+  } 
 }
 
-void add_Tag(uint16_t id, String tag, String value_tag ) { ptr_points[id]->addTag(tag.c_str(), value_tag.c_str()); }
+void add_Tag( String tag, String value_tag ) { if(ptr_point != NULL) ptr_point->addTag( tag.c_str(), value_tag.c_str() ); }
 
-void clear_Fields(uint16_t id) { ptr_points[id]->clearFields(); }
+void add_Field( String field, String value )    { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value.c_str() ); }
+void add_Field( String field, bool value )      { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
+void add_Field( String field, float value )     { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
+void add_Field( String field, uint32_t value )  { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
+void add_Field( String field, uint16_t value )  { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
+void add_Field( String field, uint8_t value )   { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
 
-void clear_Tags(uint16_t id) { ptr_points[id]->clearTags(); }
-
-void add_Field(uint16_t id, String field, String value )    { ptr_points[id]->addField( field.c_str() , value.c_str() ); }
-void add_Field(uint16_t id, String field, bool value )      { ptr_points[id]->addField( field.c_str() , value ); }
-void add_Field(uint16_t id, String field, float value )     { ptr_points[id]->addField( field.c_str() , value ); }
-void add_Field(uint16_t id, String field, uint32_t value )  { ptr_points[id]->addField( field.c_str() , value ); }
-void add_Field(uint16_t id, String field, uint16_t value )  { ptr_points[id]->addField( field.c_str() , value ); }
-void add_Field(uint16_t id, String field, uint8_t value )   { ptr_points[id]->addField( field.c_str() , value ); }
-
-bool influx_white_point(uint16_t id)
+bool white_Point()
 {
-  if(client == NULL) return false;
+  if(client == NULL)    return false;
+  if(ptr_point == NULL) return false;
   if ( !client->writePoint( *(ptr_points[id]) ) )
   {
     Serial.print("ERROR: InfluxDB write failed:\n     ");
@@ -41,6 +40,12 @@ bool influx_white_point(uint16_t id)
     return false;
   }
   return true;
+}
+
+void delete_Point()
+{ 
+  delete ptr_point;
+  ptr_point = NULL;
 }
 
 // FUNCTIONS INFLUXDB ----------------------------------------------------------------------------------------------------

@@ -20,7 +20,7 @@ void add_Tag(uint16_t id, String tag, String value_tag );
 
 void clear_Fields(uint16_t id);
 
-void clear_Tags(uint16_t id);
+void clear_point(uint16_t id);
 
 void add_Field(uint16_t id, String field, String value );
 void add_Field(uint16_t id, String field, bool value );
