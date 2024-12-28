@@ -5,37 +5,37 @@
 
 #include "Print.h"
 #include "HardwareSerial.h"
-#include <vector>
 
 #include <InfluxDbClient.h>
 #include <InfluxDbCloud.h>
 
 #include "my_timer.h"
 
+
 // FUNCTIONS POINT ----------------------------------------------------------------------------------------------------
 
-uint16_t set_point(String mensurement);
+void set_Point( String mensurement );
 
-void add_Tag(uint16_t id, String tag, String value_tag );
+void add_Tag( String tag, String value_tag );
 
-void clear_Fields(uint16_t id);
+void add_Field( String field, String value );
+void add_Field( String field, bool value );
+void add_Field( String field, float value );
+void add_Field( String field, uint32_t value );
+void add_Field( String field, uint16_t value );
+void add_Field( String field, uint8_t value );
 
-void clear_point(uint16_t id);
+bool white_Point();
 
-void add_Field(uint16_t id, String field, String value );
-void add_Field(uint16_t id, String field, bool value );
-void add_Field(uint16_t id, String field, float value );
-void add_Field(uint16_t id, String field, uint32_t value );
-void add_Field(uint16_t id, String field, uint16_t value );
-void add_Field(uint16_t id, String field, uint8_t value );
+void delete_Point();
 
-bool influx_white_point(uint16_t id);
 
 // FUNCTIONS INFLUXDB ----------------------------------------------------------------------------------------------------
 
 void influx_init(const char* url, const char* org, const char* bucket, const char* token, const char* cert, const char* tz);
 bool influx_connection();
 bool influx_is_connected();
+
 
 // ----------------------------------------------------------------------------------------------------
 

@@ -13,18 +13,6 @@
 #include "server_manager.h"
 #include "gpio_data.h"
 
-// DEFINES ----------------------------------------------------------------------------------------------------
-
-typedef struct {
-  uint16_t      id;
-  my_timer_t    timer;
-}data_t;
-
-#define SET_DATA(data, mensurement, data_timer, tag, tag_value)                                             \
-        data.id = set_point(mensurement);                                                                   \
-        set_timer(&(data.timer), data_timer, NULL);                                                         \
-        if (String(tag).length() > 0 && String(tag_value).length() > 0) add_Tag(data.id, tag, tag_value);   \
-        delay(10);
 
 // INFLUXDB CONFIG ----------------------------------------------------------------------------------------------------
 
@@ -34,29 +22,20 @@ typedef struct {
 #define INFLUXDB_TOKEN        "58lWlntgNVpzfnK91ZUajQlOkm9z7fmYMMM4YwT2A7JXbaOQiUkD49f0Tb4FarHtNHY6T4q6G9xzs_ZpNi--9A=="
 #define TZ_INFO               "UTC-3" //Time zone info
 
+
 // DATA CONFIG ----------------------------------------------------------------------------------------------------
 
-// GLOBAL TAGS ----------------------------------------
+// GLOBAL TAGS --------------------------------------------------
 #define TG_ID_DEVICE          "MAQUINA"
 #define TG_ID_CLIENTE         "CLIENTE"
-// ----------------------------------------
 
-// DATA ----------------------------------------
-#define NUMBER_OF_DATA        2
-enum data_index
-{
-  D_ONOFF,
-  D_WIFI
-};
-// ----------------------------------------
-
-// D_WIFI ----------------------------------------
+// D_WIFI --------------------------------------------------
 #define M_D_WIFI              "WIFI"
 #define T_D_WIFI_SSID         "SSID"
 #define F_D_WIFI_RSSI         "RSSII"
+#define CLOCK_D_WIFI          TIME_30S
 
-#define TIME_D_WIFI           TIME_30S
-// D_ONOFF ----------------------------------------
+// D_ONOFF --------------------------------------------------
 #define M_D_ONOFF             "ONOFF"
 #define T_D_ONOFF_PIN         "M_TRACCION"
 #define F_D_ONOFF_STATE       "State"
@@ -64,11 +43,11 @@ enum data_index
 #define F_D_ONOFF_TOFF        "TOFF"
 #define F_D_ONOFF_TTON        "TTON"
 #define F_D_ONOFF_TTOFF       "TTOFF"
+#define CLOCK_D_ONOFF         TIME_30S
+#define MOTOR_TRACCION        DIGITAL_PIN_CERO
 
-#define TIME_D_ONOFF          TIME_30S
+// --------------------------------------------------
 
-#define MOTOR_TRACCION        DIGITAL_PIN_CERO   
-// ----------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
 

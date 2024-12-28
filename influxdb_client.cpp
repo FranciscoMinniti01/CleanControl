@@ -2,22 +2,22 @@
 
 #include "influxdb_client.h"
 
+
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 InfluxDBClient*     client = NULL;
 Point*              ptr_point = NULL;
 static const char*  time_zone;
 
+
 // FUNCTIONS POINT ----------------------------------------------------------------------------------------------------
 
 void set_Point( String mensurement )
 { 
+  if(ptr_point != NULL) delete_Point();
   ptr_point = new Point(mensurement.c_str());
-  if(ptr_point != NULL)
-  {
-    ptr_point->clearFields(); 
-    ptr_point->clearTags();
-  } 
+  ptr_point->clearFields(); 
+  ptr_point->clearTags(); 
 }
 
 void add_Tag( String tag, String value_tag ) { if(ptr_point != NULL) ptr_point->addTag( tag.c_str(), value_tag.c_str() ); }
@@ -33,12 +33,14 @@ bool white_Point()
 {
   if(client == NULL)    return false;
   if(ptr_point == NULL) return false;
-  if ( !client->writePoint( *(ptr_points[id]) ) )
+  if ( !client->writePoint( *ptr_point ) )
   {
     Serial.print("ERROR: InfluxDB write failed:\n     ");
     Serial.println(client->getLastErrorMessage());
+    delete_Point();
     return false;
   }
+  delete_Point();
   return true;
 }
 
@@ -47,6 +49,7 @@ void delete_Point()
   delete ptr_point;
   ptr_point = NULL;
 }
+
 
 // FUNCTIONS INFLUXDB ----------------------------------------------------------------------------------------------------
 
@@ -80,5 +83,6 @@ bool influx_is_connected()
   if(client->validateConnection()) return true;
   else return false;
 }
+
 
 // ----------------------------------------------------------------------------------------------------

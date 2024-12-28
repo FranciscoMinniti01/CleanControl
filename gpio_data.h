@@ -14,15 +14,15 @@
 
 // GPIO DATA CONFIG ----------------------------------------------------------------------------------------------------
 
-// DIGITAL PIN -----------------------
+// DIGITAL PIN --------------------------------------------------
 #define NUMBER_OF_DIGITAL_PIN 1
 #define DIGITAL_PIN_CERO      15
 #define DIGITAL_PIN_UNO       16
 #define DIGITAL_PIN_DOS       17
-// ANALOG PIN ------------------------
+// ANALOG PIN --------------------------------------------------
 #define NUMBER_OF_ANALOG_PIN  1
 #define ANALOG_PIN_CERO       10
-// -----------------------------------
+// --------------------------------------------------
 
 #define TIME_TO_INPUT         TIME_10mS
 #define TIME_TO_SAVE          TIME_60S

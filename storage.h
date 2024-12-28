@@ -18,7 +18,7 @@ typedef struct
   String    key;
 } storage_t;
 
-// FUNCTIONS VARIABLES
+// FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 void set_data_storage(storage_t* s, void* d, size_t l, String k);
 bool get_data(storage_t* s);

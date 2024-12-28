@@ -121,13 +121,13 @@ void FormRoot()
 
   html += "            <h2>Configuration</h2>";
 
-  // USER PARAMETERS ------------------------
+  // USER PARAMETERS --------------------------------------------------
   html += "            <label>Machine ID:</label>";
   html += "            <input type=\"text\" name=\"machineid\" value=\"" + user_param.machine_id + "\">";
-  // ----------------------------------------
+  // --------------------------------------------------
   html += "            <label>Client ID:</label>";
   html += "            <input type=\"text\" name=\"clientid\" value=\"" + user_param.client_id + "\">";
-  // ----------------------------------------
+  // --------------------------------------------------
 
   html += R"rawliteral(            
               <input type="submit" value="Enviar">
@@ -200,25 +200,23 @@ void FormSubmitRoot()
     else Serial.printf("INFO: Ssid %d vacia\n",i+1);       
   }   
   
-  // USER PARAMETERS ------------------------
+  // USER PARAMETERS --------------------------------------------------
   if(server.arg("machineid"))
   {
     user_param.machine_id = server.arg("machineid");
     Serial.printf("INFO: Machine ID ingresada: %s\n",user_param.machine_id);
     if(! seve_data(&storage_param[INDEX_MACHINE_ID])) Serial.println("EROOR: Special param not save");
-    user_param.is_updated = true;
   }
   else Serial.printf("INFO: Machine ID vacia\n");
-  // ----------------------------------------
+  // --------------------------------------------------
   if(server.arg("clientid"))  
   {
     user_param.client_id  = server.arg("clientid");
     Serial.printf("INFO: Client ID ingresada: %s\n",user_param.client_id);
     if(! seve_data(&storage_param[INDEX_CLIENT_ID])) Serial.println("EROOR: Special param not save");
-    user_param.is_updated = true;
   }
   else Serial.printf("INFO: Client ID vacia\n");
-  // ----------------------------------------
+  // --------------------------------------------------
 
   server.send(200, "text/html", html);
 }
@@ -229,27 +227,25 @@ void server_init()
 {
   Serial.printf("DEBUG: server_init()\n");
 
-  // ROOT ----------------------------------------
+  // ROOT --------------------------------------------------
   set_hdmi_root("/",HTTP_GET,FormRoot);
-  // ----------------------------------------
+  // --------------------------------------------------
   set_hdmi_root("/submit",HTTP_POST,FormSubmitRoot);
-  // ----------------------------------------
+  // --------------------------------------------------
 
-  // USER PARAMETERS ----------------------------------------
+  // USER PARAMETERS --------------------------------------------------
   set_data_storage( &storage_param[INDEX_MACHINE_ID],
                     (void*)user_param.machine_id.c_str(),
                     sizeof(user_param.machine_id),
                     KEY_SPECIAL_PARAM + String(INDEX_MACHINE_ID) );
   if(!get_data( &storage_param[INDEX_MACHINE_ID] )) user_param.machine_id = "";
-  else user_param.is_updated = true;
-  // ----------------------------------------
+  // --------------------------------------------------
   set_data_storage( &storage_param[INDEX_CLIENT_ID],
                     (void*)user_param.client_id.c_str(), 
                     sizeof(user_param.client_id),
                     KEY_SPECIAL_PARAM + String(INDEX_CLIENT_ID) );
   if(!get_data( &storage_param[INDEX_CLIENT_ID] )) user_param.client_id = "";
-  else user_param.is_updated = true;
-  // ----------------------------------------
+  // --------------------------------------------------
 }
 
 user_param_t* get_special_param()

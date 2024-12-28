@@ -1,14 +1,20 @@
-// APP MAIN -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// APP MAIN ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
 #include "CleanControl.h"
 
+
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 static bool is_influx_connected = false;
 static user_param_t* user_param = NULL;
-data_t data[NUMBER_OF_DATA];
+
+// DATA --------------------------------------------------
+my_timer_t timer_d_wifi;    // D_WIFI
+my_timer_t timer_d_onoff;   // D_ONOFF
+// --------------------------------------------------
+
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
@@ -24,10 +30,12 @@ void setup()
 
   influx_init(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert, TZ_INFO);
 
-  // D_WIFI ----------------------------------------
-  SET_DATA(data[D_WIFI], M_D_WIFI, TIME_D_WIFI, "", "")
-  SET_DATA(data[D_ONOFF], M_D_ONOFF, TIME_D_ONOFF, "", "")
-  // ----------------------------------------
+  // DATA --------------------------------------------------
+  set_timer(&timer_d_wifi, CLOCK_D_WIFI, NULL);     // D_WIFI
+  delay(10);
+  set_timer(&timer_d_onoff, CLOCK_D_ONOFF, NULL);   // D_ONOFF
+  delay(10);
+  // --------------------------------------------------
 }
 
 void loop()
@@ -37,62 +45,53 @@ void loop()
 
   if(getWifiStatus())
   {
+    if(is_influx_connected == false) influx_connection();
+
     if(influx_is_connected())
     {
-      // D_WIFI ----------------------------------------
-      if( get_flag_timer( &(data[D_WIFI].timer) ) )
+      is_influx_connected = true;
+      // D_WIFI --------------------------------------------------
+      if( get_flag_timer( &timer_d_wifi ) )
       {
-        static String last_ssid = "";
-        String ssid = getSSID();
-        if(last_ssid != ssid)
-        {
-          last_ssid = ssid;
-          add_Tag( data[D_WIFI].id, T_D_WIFI_SSID, ssid );
-        }
-        clear_Fields(data[D_WIFI].id);
-        add_Field(data[D_WIFI].id, F_D_WIFI_RSSI, getRSSI());
-        //if ( !influx_white_point(data[D_WIFI].id) ) Serial.print("ERROR: Wifi data can't sent\n");
-        //else Serial.print("INFO: Wifi data sent\n");
+        set_Point(M_D_WIFI);
+        add_Tag(TG_ID_DEVICE,  user_param->machine_id );
+        add_Tag(TG_ID_CLIENTE, user_param->client_id );
+        add_Tag(T_D_WIFI_SSID,getSSID());
+        add_Field(F_D_WIFI_RSSI, getRSSI());
+        if ( !white_Point() ) Serial.print("ERROR: Wifi data can't sent\n");
+        else Serial.print("INFO: Wifi data sent\n");
       }
-      // D_ONOFF ----------------------------------------
-      if( get_flag_timer( &(data[D_ONOFF].timer) ) )
+      // D_ONOFF --------------------------------------------------
+      if( get_flag_timer( &timer_d_onoff ) )
       {
-        clear_Fields(data[D_ONOFF].id);
         digital_pin_t* traction_motor = get_digital_pin(MOTOR_TRACCION);
-        add_Field(data[D_ONOFF].id,   F_D_ONOFF_STATE,  traction_motor->state);
-        add_Field(data[D_ONOFF].id,   F_D_ONOFF_TON,    traction_motor->time_state[1]);
-        add_Field(data[D_ONOFF].id,   F_D_ONOFF_TOFF,   traction_motor->time_state[0]);
-        add_Field(data[D_ONOFF].id,   F_D_ONOFF_TTON,   traction_motor->total_time_state[1]);
-        add_Field(data[D_ONOFF].id,   F_D_ONOFF_TTOFF,  traction_motor->total_time_state[0]);
-        if ( !influx_white_point(data[D_ONOFF].id) ) Serial.print("ERROR: onoff data can't sent\n");
+        set_Point(M_D_ONOFF);
+        add_Tag(TG_ID_DEVICE,  user_param->machine_id );
+        add_Tag(TG_ID_CLIENTE, user_param->client_id );
+        add_Field(F_D_ONOFF_STATE,  traction_motor->state);
+        add_Field(F_D_ONOFF_TON,    traction_motor->time_state[1]);
+        add_Field(F_D_ONOFF_TOFF,   traction_motor->time_state[0]);
+        add_Field(F_D_ONOFF_TTON,   traction_motor->total_time_state[1]);
+        add_Field(F_D_ONOFF_TTOFF,  traction_motor->total_time_state[0]);
+        if ( !white_Point() ) Serial.print("ERROR: onoff data can't sent\n");
         else Serial.print("INFO: onoff data sent\n");
       }
-      // ----------------------------------------
+      // --------------------------------------------------
+    }
+    else is_influx_connected = false;
 
-      if(user_param->is_updated)
-      {
-        for(int i=0 ; i<NUMBER_OF_DATA ; i++)
-        {
-          // GLOBAL TAGS ----------------------------------------
-          if(!(user_param->machine_id.isEmpty())) add_Tag( data[i].id, TG_ID_DEVICE, user_param->machine_id );
-          if(!(user_param->client_id.isEmpty()))  add_Tag( data[i].id, TG_ID_CLIENTE, user_param->client_id );
-          // ----------------------------------------
-        }
-        Serial.print("INFO: Globals Tags adds\n");
-        user_param->is_updated = false;
-      }
-    }
-    else
-    {
-      influx_connection();
-    }
   }
 }
 
+
 // ----------------------------------------------------------------------------------------------------
 
-// APP MAIN -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// APP MAIN ------------------------------------------------------------------------------------------------------------------------------------------------------
  
+
+
+
+
 
 
 

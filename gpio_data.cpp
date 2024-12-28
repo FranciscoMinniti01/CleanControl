@@ -17,13 +17,13 @@ void gpio_data_init()
   set_timer(&timer_input, TIME_TO_INPUT, NULL);
   set_timer(&timer_save,  TIME_TO_SAVE, NULL);
 
-  // DIGITAL PIN -----------------------
+  // DIGITAL PIN --------------------------------------------------
   digital_pin[0].pin  = DIGITAL_PIN_CERO;
   //digital_pin[1].pin  = DIGITAL_PIN_UNO;
   //digital_pin[2].pin  = DIGITAL_PIN_DOS;
-  // ANALOG PIN ------------------------
+  // ANALOG PIN --------------------------------------------------
   analog_pin[0].pin   = ANALOG_PIN_CERO;
-  // -----------------------------------
+  // --------------------------------------------------
 
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
