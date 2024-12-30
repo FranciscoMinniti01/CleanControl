@@ -65,5 +65,47 @@ void timer_deinit()
   timerEnd(timer);
 }
 
+uint64_t get_time(uint8_t units)
+{ 
+  uint64_t t = timerReadMicros(timer);
+  switch(units)
+  {
+    case SEGUNDOS:
+      return t/1000000;
+
+    case MILISEGUNDOS:
+      return t/1000;
+
+    case MICROSEGUNDOS:
+    default:
+      return t;
+  }
+}
+
+uint64_t* new_time_measurement()
+{
+  uint64_t* t = new uint64_t(timerReadMicros(timer));
+  return t;
+}
+
+uint64_t end_time_measurement(uint64_t* p, uint8_t units)
+{
+  uint64_t tn = timerReadMicros(timer);
+  uint64_t t  = *p;
+  delete p;
+  switch(units)
+  {
+    case SEGUNDOS:
+      return (tn-t)/1000000;
+
+    case MILISEGUNDOS:
+      return (tn-t)/1000;
+
+    case MICROSEGUNDOS:
+    default:
+      return (tn-t);
+  }
+}
+
 // ----------------------------------------------------------------------------------------------------
 

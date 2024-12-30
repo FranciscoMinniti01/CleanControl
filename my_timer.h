@@ -25,6 +25,13 @@
 
 typedef void (*cb_timer)();
 
+enum units_t
+{
+  SEGUNDOS,
+  MILISEGUNDOS,
+  MICROSEGUNDOS
+};
+
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 typedef struct
@@ -43,6 +50,10 @@ void timer_deinit();
 void set_timer(my_timer_t* ptr, uint16_t comparator, cb_timer cb);
 void reset_timer(my_timer_t* ptr, uint16_t comparator);
 bool get_flag_timer(my_timer_t* ptr);
+
+uint64_t get_time(uint8_t units);
+uint64_t* new_time_measurement();
+uint64_t end_time_measurement(uint64_t* p, uint8_t units);
 
 // ----------------------------------------------------------------------------------------------------
 
