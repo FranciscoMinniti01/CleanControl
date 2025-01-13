@@ -4,10 +4,14 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-Adafruit_MPU6050  mpu;
-static motion_info_t     motion_info;
-static uint64_t*  delta_time;
-static uint8_t    counter_time;
+Adafruit_MPU6050      mpu;
+static motion_info_t  motion_info;
+
+cartesian_t correction_factor;
+
+storage_t Distance_axes_storage;
+storage_t Distance_storage;
+storage_t activeTime_storage;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
@@ -40,7 +44,7 @@ void save_motion_info()
 
 bool motion_init()
 {
-  Wire.begin(21,20)
+  Wire.begin(PIN_SDA,PIN_SCL);
   if( !mpu.begin() )
   {
     Serial.println("ERROR: Failed to find MPU6050 chip");
@@ -52,28 +56,49 @@ bool motion_init()
     mpu.setAccelerometerRange(MPU6050_RANGE_4_G);
     mpu.setGyroRange(MPU6050_RANGE_250_DEG);
     mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
-    restorar_motion_info();
-    delta_time = new_time_measurement();
+    //restorar_motion_info();
+    delay(100);
+    sensors_event_t a, g, temp;
+    if (!mpu.getEvent(&a, &g, &temp)) {
+      Serial.println("ERROR: Falló la lectura del sensor MPU6050.");
+      return false;
+    }
+    correction_factor.X = a.acceleration.x;
+    correction_factor.Y = a.acceleration.y;
+    correction_factor.Z = a.acceleration.z;
     return true;
   }
 }
 
 void motion_control()
 {
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+  static uint8_t    counter_time  = 0;
+  static uint64_t   delta_time    = 0;
 
-  // Pido el delta del tiempo
-  uint64_t DT = end_time_measurement(delta_time,SEGUNDOS);
-  delta_time = new_time_measurement();
+  // Delta tiempo
+  float DT    = get_delta_time(delta_time)/1000000.0;
+  delta_time  = get_time(); 
+  if(DT < 0.00001) return;
+
+  // Obtengo informacion del sensor
+  sensors_event_t a, g, temp;
+  if (!mpu.getEvent(&a, &g, &temp)) {
+    Serial.println("ERROR: Falló la lectura del sensor MPU6050.");
+    return;
+  }
+  float AX = a.acceleration.x - correction_factor.X;// - CORRECCION_AX;
+  float AY = a.acceleration.y - correction_factor.Y;// - CORRECCION_AY;
+  float AZ = a.acceleration.z - correction_factor.Z;// - CORRECCION_AZ; 
 
   // Aceleracion total
-  motion_info.acceleration = sqrt(pow(a.acceleration.x, 2) + pow(a.acceleration.y, 2) + pow(a.acceleration.z, 2));
-
+  motion_info.acceleration = sqrt(pow(AX, 2) + pow(AY, 2) + pow(AZ, 2));
+  
   // Detectar movimiento
   if(motion_info.acceleration > 1.1) motion_info.is_move = true;
   else motion_info.is_move = false;
+  if(motion_info.is_move) Serial.println("EN MOVIMIENTO");
 
+  /*
   // Tiempo de actividad
   if(motion_info.is_move) motion_info.activeTime += DT;
 
@@ -98,34 +123,34 @@ void motion_control()
   // Calcular orientación (pitch y roll)
   #ifdef CALCULATE_ROTATION
   motion_info.Inclination_axes_a.X = atan2(a.acceleration.x, sqrt(pow(a.acceleration.y, 2) + pow(a.acceleration.z, 2))) * 180 / PI;
-  motion_info.Inclination_axes_a.Y = atan2(a.acceleration.y, sqrt(pow(a.acceleration.x, 2) + pow(a.acceleration.z, 2))) * 180 / PI;
+  motion_info.Inclination_axes_a.Y = atan2(a.acceleration.y, sqrt(pow(a.acceleration.x, 2) + pow(a.acceleration.z - 9.81, 2))) * 180 / PI;
   motion_info.Inclination_axes_a.Z = 0;
 
   motion_info.Inclination_axes_g.X += a.gyro.x * DT;
   motion_info.Inclination_axes_g.Y += a.gyro.y * DT;
   motion_info.Inclination_axes_g.Z += a.gyro.z * DT;
   #endif//CALCULATE_ROTATION
-
-  #ifdef PRINT_MOTION_INFO
-  Serial.printf("DEBUG: MOTION INFO\n");
-  Serial.printf("     Aceleracion total = %f\n" ,motion_info.acceleration);
-  Serial.printf("     Velocidad total   = %f\n" ,motion_info.Speed);
-  Serial.printf("     Distancia total   = %f\n" ,motion_info.Distance);
-  Serial.printf("     En movimiento     = %s\n" ,motion_info.is_move ? "SI":"NO");
-  Serial.printf("     Tiempo total      = %d\n" ,motion_info.activeTime);
-  Serial.printf("     Velocida: X = %f - Y = %f - Z = %f\n" ,motion_info.Speed_axes.X, motion_info.Speed_axes.Y, motion_info.Speed_axes.Z);
-  Serial.printf("     Distancia: X = %f - Y = %f - Z = %f\n" ,motion_info.Distance_axes.X, motion_info.Distance_axes.Y, motion_info.Distance_axes.Z);
-  Serial.printf("     Rotacion A: X = %f - Y = %f - Z = %f\n" ,motion_info.Inclination_axes_a.X, motion_info.Inclination_axes_a.Y, motion_info.Inclination_axes_a.Z);
-  Serial.printf("     Rotacion G: X = %f - Y = %f - Z = %f\n" ,motion_info.Inclination_axes_g.X, motion_info.Inclination_axes_g.Y, motion_info.Inclination_axes_g.Z);
-  #endif//PRINT_MOTION_INFO
-
+  */
   if(counter_time > COUNTER_TO_STORE_INFO)
   {
-    save_motion_info();
+    //save_motion_info();
+    #ifdef PRINT_MOTION_INFO
+    Serial.printf("DEBUG: MOTION INFO\n");
+    Serial.printf("     Delta time        = %.10f\n" ,DT);
+    Serial.printf("     Aceleración cruda - X: %f, Y: %f, Z: %f\n", AX, AY, AZ);
+    Serial.printf("     Aceleracion total = %f\n" ,motion_info.acceleration);
+    Serial.printf("     En movimiento     = %s\n" ,motion_info.is_move ? "SI":"NO");
+    /*Serial.printf("     Velocidad total   = %f\n" ,motion_info.Speed);
+    Serial.printf("     Distancia total   = %f\n" ,motion_info.Distance);
+    Serial.printf("     Tiempo total      = %d\n" ,motion_info.activeTime);
+    Serial.printf("     Velocida: X = %f - Y = %f - Z = %f\n" ,motion_info.Speed_axes.X, motion_info.Speed_axes.Y, motion_info.Speed_axes.Z);
+    Serial.printf("     Distancia: X = %f - Y = %f - Z = %f\n" ,motion_info.Distance_axes.X, motion_info.Distance_axes.Y, motion_info.Distance_axes.Z);
+    Serial.printf("     Rotacion A: X = %f - Y = %f - Z = %f\n" ,motion_info.Inclination_axes_a.X, motion_info.Inclination_axes_a.Y, motion_info.Inclination_axes_a.Z);
+    Serial.printf("     Rotacion G: X = %f - Y = %f - Z = %f\n" ,motion_info.Inclination_axes_g.X, motion_info.Inclination_axes_g.Y, motion_info.Inclination_axes_g.Z);*/
+    #endif//PRINT_MOTION_INFO
     counter_time = 0;
   }
   else counter_time++;
-
 }
 
 motion_info_t* get_motion_info()

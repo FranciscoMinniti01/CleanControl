@@ -26,6 +26,7 @@ void setup()
   timer_init();
   server_init();
   gpio_data_init();
+  motion_init();
   user_param = get_special_param(); 
 
   influx_init(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert, TZ_INFO);
@@ -42,6 +43,7 @@ void loop()
 {
   WiFi_manager();
   gpio_data_control();
+  motion_control();
 
   if(getWifiStatus())
   {

@@ -4,8 +4,9 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-hw_timer_t* timer    = NULL;
-bool flag            = true;
+hw_timer_t* timer       = NULL;
+hw_timer_t* tota_timer  = NULL;
+bool flag               = true;
 
 std::vector<my_timer_t*> my_timers;
 
@@ -28,7 +29,8 @@ void timer_callback()
 bool timer_init()
 {
   timer = timerBegin(TIME_FREC);
-  if(timer == NULL)
+  tota_timer = timerBegin(TIME_FREC);
+  if(timer == NULL || tota_timer == NULL)
   {
     Serial.println("ERROR: Timer init failed");
     return false;
@@ -65,46 +67,16 @@ void timer_deinit()
   timerEnd(timer);
 }
 
-uint64_t get_time(uint8_t units)
+uint64_t get_time()
 { 
-  uint64_t t = timerReadMicros(timer);
-  switch(units)
-  {
-    case SEGUNDOS:
-      return t/1000000;
-
-    case MILISEGUNDOS:
-      return t/1000;
-
-    case MICROSEGUNDOS:
-    default:
-      return t;
-  }
+  return timerReadMicros(tota_timer);
 }
 
-uint64_t* new_time_measurement()
+uint64_t get_delta_time(uint64_t ot)
 {
-  uint64_t* t = new uint64_t(timerReadMicros(timer));
-  return t;
-}
-
-uint64_t end_time_measurement(uint64_t* p, uint8_t units)
-{
-  uint64_t tn = timerReadMicros(timer);
-  uint64_t t  = *p;
-  delete p;
-  switch(units)
-  {
-    case SEGUNDOS:
-      return (tn-t)/1000000;
-
-    case MILISEGUNDOS:
-      return (tn-t)/1000;
-
-    case MICROSEGUNDOS:
-    default:
-      return (tn-t);
-  }
+  uint64_t nt = timerReadMicros(tota_timer);
+  if(nt<ot) return 0;
+  return (nt-ot);
 }
 
 // ----------------------------------------------------------------------------------------------------

@@ -12,6 +12,7 @@
 #include "wifi_manager.h"
 #include "server_manager.h"
 #include "gpio_data.h"
+#include "MPU6050_module.h"
 
 
 // INFLUXDB CONFIG ----------------------------------------------------------------------------------------------------
