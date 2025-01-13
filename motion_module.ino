@@ -40,6 +40,7 @@ void save_motion_info()
 
 bool motion_init()
 {
+  Wire.begin(21,20)
   if( !mpu.begin() )
   {
     Serial.println("ERROR: Failed to find MPU6050 chip");
