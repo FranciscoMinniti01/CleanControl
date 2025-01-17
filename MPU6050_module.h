@@ -16,7 +16,8 @@
 #define PRINT_MOTION_INFO
 #define CALCULATE_ROTATION
 #define CALCULATE_MOVE_AXES
-#define COUNTER_TO_STORE_INFO         250
+#define COUNTER_TO_CALCULATE          10
+#define TIME_TO_SAVE                  TIME_60S
 
 #define PIN_SDA                       21
 #define PIN_SCL                       20
@@ -43,15 +44,20 @@ typedef struct {
 }cartesian_t;
 
 typedef struct {
-  bool          is_move;
-  cartesian_t   Speed_axes;
-  cartesian_t   Distance_axes;
-  cartesian_t   Inclination_axes_g;
-  cartesian_t   Inclination_axes_a;
-  float         acceleration;
+  cartesian_t   A_corrections;
+  cartesian_t   AccelerationAxes;
+  
+  cartesian_t   A;
+  cartesian_t   S;
+  cartesian_t   D;
+
+  bool          FlagMove;
+  uint64_t      ActiveTime;
+  float         Acceleration;
   float         Speed;
   float         Distance;
-  uint64_t      activeTime;
+  cartesian_t   Inclination;
+  //cartesian_t   Inclination_axes_g;
 }motion_info_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
