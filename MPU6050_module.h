@@ -13,21 +13,31 @@
 
 // CONFIG ----------------------------------------------------------------------------------------------------
 
-#define PRINT_MOTION_INFO
-#define CALCULATE_ROTATION
-#define CALCULATE_MOVE_AXES
-#define COUNTER_TO_CALCULATE          10
-#define TIME_TO_SAVE                  TIME_60S
+#define ENABLE_VERTICAL_AXIS_X
+//#define ENABLE_VERTICAL_AXIS_Y
+//#define ENABLE_VERTICAL_AXIS_Z
 
-#define PIN_SDA                       21
-#define PIN_SCL                       20
-#define MPU6050_ACCELEROMETER_RANGE   MPU6050_RANGE_4_G
-#define MPU6050_DEGREES_RANGE         MPU6050_RANGE_250_DEG
-#define MPU6050_BANDWIDTH_RANGE       MPU6050_BAND_5_HZ
+//#define ENABLE_PRINT_MOTION_CONFIG
+#define ENABLE_PRINT_MOTION_INFO
+#define ENABLE_CALCULATE_ROTATION
+#define ENABLE_CALCULATE_AXES
+#define ENABLE_MOTION_INTERRUP
 
-#define CORRECCION_AZ                 12.8f
-#define CORRECCION_AY                 -0.7f
-#define CORRECCION_AX                 -1.7f
+#define CONFIG_SPEED_DETEC_MOVE               0.5f
+#define CONFIG_MIN_DELTA_TIME_CALCULATE       0.001
+#define CONFIG_NUM_SAMPLES                    10
+#define CONFIG_CALIBRATION_TOLERANCE          0.5f
+#define CONFIG_TIME_TO_SAVE                   TIME_60S
+
+#define CONFIG_PIN_SDA                        21
+#define CONFIG_PIN_SCL                        20
+#define CONFIG_ACCELEROMETER_RANGE            MPU6050_RANGE_2_G
+#define CONFIG_DEGREES_RANGE                  MPU6050_RANGE_500_DEG
+#define CONFIG_BANDWIDTH_RANGE                MPU6050_BAND_10_HZ
+#define CONFIG_PASS_FILTER                    MPU6050_HIGHPASS_DISABLE
+#define CONFIG_MOTION_INTERRUP                true
+#define CONFIG_MOTION_THRESHOLD               2
+#define CONFIG_MOTION_DURATION                50
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -35,7 +45,7 @@
 #define KEY_DISTAN_T  "KDT"
 #define KEY_ACTIVE_T  "KAT"
 
-// STRUCTURES AND TYPEDEF ----------------------------------------------------------------------------------------------------
+// STRUCTURES - TYPEDEF ----------------------------------------------------------------------------------------------------
 
 typedef struct {
   float   X;
@@ -44,20 +54,20 @@ typedef struct {
 }cartesian_t;
 
 typedef struct {
+  cartesian_t   A_raw;
   cartesian_t   A_corrections;
-  cartesian_t   AccelerationAxes;
   
   cartesian_t   A;
   cartesian_t   S;
   cartesian_t   D;
 
-  bool          FlagMove;
-  uint64_t      ActiveTime;
   float         Acceleration;
   float         Speed;
   float         Distance;
-  cartesian_t   Inclination;
-  //cartesian_t   Inclination_axes_g;
+
+  bool          IsMove;
+  uint64_t      ActiveTime;
+  //cartesian_t   Inclination;
 }motion_info_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
