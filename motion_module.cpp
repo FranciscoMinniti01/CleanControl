@@ -155,7 +155,7 @@ void print_motion_info()
 {
   #ifdef ENABLE_PRINT_MOTION_INFO
   static uint16_t counter_to_print = 0;
-  if(counter_to_print > 1000)
+  if(counter_to_print > 250)
   {
     Serial.printf("MOTION INFO:\n");
     
@@ -233,12 +233,6 @@ void motion_control()
 
   control_fun_time = get_time();
 
-  float DT = get_delta_time(delta_time)/1000000.0;
-  if(DT < CONFIG_MIN_DELTA_TIME_CALCULATE) return;
-  delta_time = get_time();
-
-  if(++counter >= CONFIG_NUM_SAMPLES) counter = 0;
-
   if(!read_sensor_info()) return;
 
   // ACCELERATION --------------------------------------------------
@@ -251,23 +245,38 @@ void motion_control()
 
   motion.Acceleration = sqrt(pow(motion.A.X, 2) + pow(motion.A.Y, 2) + pow(motion.A.Z, 2));
 
-  // SPEED --------------------------------------------------
-  #ifdef ENABLE_CALCULATE_AXES
-  motion.S.X = motion.A.X * DT;
-  motion.S.Y = motion.A.Y * DT;
-  motion.S.Z = motion.A.Z * DT;
-  #endif//ENABLE_CALCULATE_AXES
+  // DELTA TIME --------------------------------------------------
+  float DT = get_delta_time(delta_time)/1000000.0;
+  if(DT < CONFIG_MIN_DELTA_TIME_CALCULATE) return;
+  delta_time = get_time();
 
-  motion.Speed += motion.Acceleration * DT; 
+  // SPEED --------------------------------------------------
+  if(abs(motion.Acceleration) > 0.1f)
+  {
+    float alpha = 0.9;
+    static float lastSpeed = 0.0;
+    #ifdef ENABLE_CALCULATE_AXES
+    motion.S.X = motion.A.X * DT;
+    motion.S.Y = motion.A.Y * DT;
+    motion.S.Z = motion.A.Z * DT;
+    #endif//ENABLE_CALCULATE_AXES
+
+    motion.Speed = alpha * (motion.Speed + motion.Acceleration * DT) + (1 - alpha) * lastSpeed;
+    lastSpeed = motion.Speed;
+  }
+  else motion.Speed *= 0.98;
 
   // DISTANCE --------------------------------------------------
-  #ifdef ENABLE_CALCULATE_AXES
-  motion.D.X = motion.S.X * DT;
-  motion.D.Y = motion.S.Y * DT;
-  motion.D.Z = motion.S.Z * DT;
-  #endif//ENABLE_CALCULATE_AXES
+  if(abs(motion.Speed) > 0.05f)
+  {
+    #ifdef ENABLE_CALCULATE_AXES
+    motion.D.X = motion.S.X * DT;
+    motion.D.Y = motion.S.Y * DT;
+    motion.D.Z = motion.S.Z * DT;
+    #endif//ENABLE_CALCULATE_AXES
 
-  motion.Distance += motion.Speed * DT; 
+    motion.Distance += motion.Speed * DT;
+  }
 
   // MOVE FLAG --------------------------------------------------
   #ifdef ENABLE_MOTION_INTERRUP
@@ -279,7 +288,7 @@ void motion_control()
   }
   lastIsMove = motion.IsMove;*/
   #else//ENABLE_MOTION_INTERRUP
-  if(motion.Speed > CONFIG_SPEED_TO_DETECTION_MOVE) motion.IsMove = true;
+  if(motion.Speed > CONFIG_SPEED_DETEC_MOVE) motion.IsMove = true;
   else motion.IsMove = false;
   #endif//ENABLE_MOTION_INTERRUP
 
@@ -304,6 +313,8 @@ void motion_control()
   #endif//ENABLE_CALCULATE_ROTATION*/
 
   // --------------------------------------------------
+
+  if(++counter >= CONFIG_NUM_SAMPLES) counter = 0;
 
   print_motion_info();
 

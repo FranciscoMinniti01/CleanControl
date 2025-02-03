@@ -23,9 +23,9 @@
 #define ENABLE_CALCULATE_AXES
 #define ENABLE_MOTION_INTERRUP
 
-#define CONFIG_SPEED_DETEC_MOVE               0.5f
+#define CONFIG_SPEED_DETEC_MOVE               0.1f
 #define CONFIG_MIN_DELTA_TIME_CALCULATE       0.001
-#define CONFIG_NUM_SAMPLES                    10
+#define CONFIG_NUM_SAMPLES                    5
 #define CONFIG_CALIBRATION_TOLERANCE          0.5f
 #define CONFIG_TIME_TO_SAVE                   TIME_60S
 
@@ -33,11 +33,11 @@
 #define CONFIG_PIN_SCL                        20
 #define CONFIG_ACCELEROMETER_RANGE            MPU6050_RANGE_2_G
 #define CONFIG_DEGREES_RANGE                  MPU6050_RANGE_500_DEG
-#define CONFIG_BANDWIDTH_RANGE                MPU6050_BAND_10_HZ
+#define CONFIG_BANDWIDTH_RANGE                MPU6050_BAND_21_HZ
 #define CONFIG_PASS_FILTER                    MPU6050_HIGHPASS_DISABLE
 #define CONFIG_MOTION_INTERRUP                true
-#define CONFIG_MOTION_THRESHOLD               2
-#define CONFIG_MOTION_DURATION                50
+#define CONFIG_MOTION_THRESHOLD               5
+#define CONFIG_MOTION_DURATION                10
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
