@@ -76,7 +76,7 @@ bool read_sensor_info()
   #endif
 }
 
-void calibration()
+/*void calibration()
 {
   int count = 0;
   uint64_t control_fun_time = get_time();
@@ -135,19 +135,109 @@ void calibration()
   Serial.printf ("     Correction Factor:      X=%f - Y=%f - Z=%f\n", motion.A_corrections.X, motion.A_corrections.Y, motion.A_corrections.Z);
   Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", motion.A_raw.X-motion.A_corrections.X, motion.A_raw.Y-motion.A_corrections.Y, motion.A_raw.Z-motion.A_corrections.Z);
   Serial.printf ("     Aceleration Average:    X=%f - Y=%f - Z=%f\n", samples_sum.X/CONFIG_NUM_SAMPLES , samples_sum.Y/CONFIG_NUM_SAMPLES, samples_sum.Z/CONFIG_NUM_SAMPLES);
+}*/
+
+bool calibration()
+{
+  int count = 0;
+  cartesian_t samples_sum2 = {0,0,0};
+  cartesian_t stdDev = {0,0,0}; 
+  uint64_t control_fun_time = get_time();
+  bool IsMove;
+
+  mpu.setMotionInterrupt(true);
+  mpu.setMotionDetectionThreshold(5);
+  mpu.setMotionDetectionDuration(5);
+  delay(10);
+
+  while (count < CONFIG_NUM_SAMPLES)
+  {
+    IsMove = mpu.getMotionInterruptStatus();
+    if(IsMove) continue;
+    Serial.printf("Movimiento = %s\n",(IsMove ? "YES" : "NO") );
+
+    if(!read_sensor_info()) continue;
+
+    if (count > 0)
+    {
+      bool xStable = abs(motion.A_raw.X - samples[count-1].X) / abs(samples[count-1].X + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool yStable = abs(motion.A_raw.Y - samples[count-1].Y) / abs(samples[count-1].Y + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool zStable = abs(motion.A_raw.Z - samples[count-1].Z) / abs(samples[count-1].Z + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
+      if (!(xStable && yStable && zStable))
+      {
+        delay(10);
+        continue;
+      }
+    }
+    samples[count].X = motion.A_raw.X;
+    samples[count].Y = motion.A_raw.Y;
+    samples[count].Z = motion.A_raw.Z;
+
+    samples_sum.X += motion.A_raw.X;
+    samples_sum.Y += motion.A_raw.Y;
+    samples_sum.Z += motion.A_raw.Z;
+
+    samples_sum2.X += pow(motion.A_raw.X, 2);
+    samples_sum2.Y += pow(motion.A_raw.Y, 2);
+    samples_sum2.Z += pow(motion.A_raw.Z, 2);
+
+    Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", count, samples[count].X, samples[count].Y, samples[count].Z);
+
+    count++;
+
+    delay(10);
+  }
+
+  motion.A_corrections.X = samples_sum.X / CONFIG_NUM_SAMPLES;
+  motion.A_corrections.Y = samples_sum.Y / CONFIG_NUM_SAMPLES;
+  motion.A_corrections.Z = samples_sum.Z / CONFIG_NUM_SAMPLES;
+
+  // Calcular desviación estándar
+  stdDev.X = sqrt((samples_sum2.X / CONFIG_NUM_SAMPLES) - pow(motion.A_corrections.X, 2));
+  stdDev.Y = sqrt((samples_sum2.Y / CONFIG_NUM_SAMPLES) - pow(motion.A_corrections.Y, 2));
+  stdDev.Z = sqrt((samples_sum2.Z / CONFIG_NUM_SAMPLES) - pow(motion.A_corrections.Z, 2));
+
+  // Verificar si la calibración es válida
+  if (stdDev.X > CONFIG_CALIBRATION_TOLERANCE || stdDev.Y > CONFIG_CALIBRATION_TOLERANCE || stdDev.Z > CONFIG_CALIBRATION_TOLERANCE)
+  {
+    Serial.println("ERROR: Alta variabilidad en la calibración. Intente nuevamente.");
+    return false;
+  }
+
+  samples_sum.X = 0;
+  samples_sum.Y = 0;
+  samples_sum.Z = 0;
+
+  for(uint8_t i = 0 ; i<CONFIG_NUM_SAMPLES ; i++)
+  {
+    samples[i].X -= motion.A_corrections.X;
+    samples[i].Y -= motion.A_corrections.Y;
+    samples[i].Z -= motion.A_corrections.Z;
+
+    samples_sum.X += samples[i].X;
+    samples_sum.Y += samples[i].Y;
+    samples_sum.Z += samples[i].Z;
+  }
+
+  Serial.println("Calibration Complete:");
+  Serial.printf ("     Time = %.10f s\n", get_delta_time(control_fun_time)/1000000.0 );
+  Serial.printf ("     Correction Factor:      X=%f - Y=%f - Z=%f\n", motion.A_corrections.X, motion.A_corrections.Y, motion.A_corrections.Z);
+  Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", motion.A_raw.X-motion.A_corrections.X, motion.A_raw.Y-motion.A_corrections.Y, motion.A_raw.Z-motion.A_corrections.Z);
+  Serial.printf ("     Aceleration Average:    X=%f - Y=%f - Z=%f\n", samples_sum.X/CONFIG_NUM_SAMPLES , samples_sum.Y/CONFIG_NUM_SAMPLES, samples_sum.Z/CONFIG_NUM_SAMPLES);
+
+  return true;
 }
 
 void print_motion_config()
 {
   #ifdef ENABLE_PRINT_MOTION_CONFIG
-  Serial.printf("MOTION CONFIG\n");
-  Serial.printf("     Accelerometer Range:  %d G\n"   , pow(2,mpu.getAccelerometerRange()+2) );
-  Serial.printf("     Gyroscope Range:      %d DEG\n" , mpu.getGyroRange() );// 250*pow(2,mpu.getGyroRange()));
-  Serial.printf("     Filter BandWidth:     %d\n"     , mpu.getFilterBandwidth() );
-  Serial.printf("     Clock:                %d\n"     , mpu.getClock() );
-  Serial.printf("     Sample Rate Divisor:  %d\n"     , mpu.getSampleRateDivisor() );
-  Serial.printf("     Cycle Rate:           %d\n"     , mpu.getCycleRate() );
-  Serial.printf("     High Pass Filter:     %d\n"     , mpu.getHighPassFilter() );
+  Serial.printf("MPU6050 Driver configuration:\n");
+  Serial.printf("     Accelerometer Range:  %d\n"   , mpu.getAccelerometerRange() );
+  Serial.printf("     Gyroscope Range:      %d\n"   , mpu.getGyroRange() );
+  Serial.printf("     Filter BandWidth:     %d\n"   , mpu.getFilterBandwidth() );
+  Serial.printf("     High Pass Filter:     %d\n"   , mpu.getHighPassFilter() );
+  Serial.printf("     Sample Rate Divisor:  %d\n"   , mpu.getSampleRateDivisor() );
+  Serial.printf("     Clock:                %d\n"   , mpu.getClock() );
   #endif//ENABLE_PRINT_MOTION_CONFIG
 }
 
@@ -204,9 +294,23 @@ bool motion_init()
   }
   
   mpu.setAccelerometerRange(CONFIG_ACCELEROMETER_RANGE);
-  mpu.setGyroRange(CONFIG_DEGREES_RANGE);
+  mpu.setGyroRange(CONFIG_GYROSCOPE_RANGE);
   mpu.setFilterBandwidth(CONFIG_BANDWIDTH_RANGE);
   mpu.setHighPassFilter(CONFIG_PASS_FILTER);
+  mpu.setSampleRateDivisor(CONFIG_SAMPLE_DIVISOR);
+
+  #if defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
+  mpu.setClock(MPU6050_PLL_GYROX);
+  #elif !defined(ENABLE_VERTICAL_AXIS_X) && defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
+  mpu.setClock(MPU6050_PLL_GYROY);
+  #elif !defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && defined(ENABLE_VERTICAL_AXIS_Z)
+  mpu.setClock(MPU6050_PLL_GYROZ);
+  #else
+  Serial.println("ERROR: VERTICAL AXIS NOT CONFIGURED");
+  return false;
+  #endif
+
+  //calibration();
 
   #ifdef ENABLE_MOTION_INTERRUP
   mpu.setMotionInterrupt(CONFIG_MOTION_INTERRUP);
@@ -215,10 +319,8 @@ bool motion_init()
   delay(100);
   #endif//ENABLE_MOTION_INTERRUP
 
-  set_timer(&timer_to_save, CONFIG_TIME_TO_SAVE, NULL);
-  delta_time = get_time();
-
-  calibration();
+  //set_timer(&timer_to_save, CONFIG_TIME_TO_SAVE, NULL);
+  //delta_time = get_time();
 
   print_motion_config();
 
@@ -228,6 +330,17 @@ bool motion_init()
 }
 
 void motion_control()
+{
+  static uint16_t counter_to_print = 0;
+  if(counter_to_print >= 1000)
+  {
+    Serial.printf("%s\n",(mpu.getMotionInterruptStatus() ? "YEEEES" : "NO") );
+    counter_to_print = 0;
+  }
+  else counter_to_print++;
+}
+
+/*void motion_control()
 {
   static uint8_t counter = 0;
 
@@ -253,7 +366,7 @@ void motion_control()
   // SPEED --------------------------------------------------
   if(abs(motion.Acceleration) > 0.1f)
   {
-    float alpha = 0.9;
+    float alpha = 0.7;
     static float lastSpeed = 0.0;
     #ifdef ENABLE_CALCULATE_AXES
     motion.S.X = motion.A.X * DT;
@@ -287,19 +400,19 @@ void motion_control()
     else Serial.println("QUIETO");
   }
   lastIsMove = motion.IsMove;*/
-  #else//ENABLE_MOTION_INTERRUP
+  /*#else//ENABLE_MOTION_INTERRUP
   if(motion.Speed > CONFIG_SPEED_DETEC_MOVE) motion.IsMove = true;
   else motion.IsMove = false;
-  #endif//ENABLE_MOTION_INTERRUP
+  #endif//ENABLE_MOTION_INTERRUP*/
 
   // ACTIVE TIME --------------------------------------------------
-  static float control_active_time = 0;
+  /*static float control_active_time = 0;
   if(motion.IsMove) control_active_time += DT;
   if(control_active_time >= 1)
   {
     motion.ActiveTime += (uint64_t)control_active_time;
     control_active_time = 0;
-  }
+  }*/
 
   /*// ROTATION --------------------------------------------------
   #ifdef ENABLE_CALCULATE_ROTATION
@@ -314,7 +427,7 @@ void motion_control()
 
   // --------------------------------------------------
 
-  if(++counter >= CONFIG_NUM_SAMPLES) counter = 0;
+  /*if(++counter >= CONFIG_NUM_SAMPLES) counter = 0;
 
   print_motion_info();
 
@@ -322,7 +435,7 @@ void motion_control()
   {
     //save_motion_info();
   }
-}
+}*/
 
 motion_info_t* get_motion_info()
 {

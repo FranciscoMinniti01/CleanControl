@@ -99,7 +99,12 @@ void loop()
 
 // MPU6050 TEST MAIN ------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#include "CleanControl.h"
+#include <string>
+#include "Print.h"
+#include "HardwareSerial.h"
+
+#include "my_timer.h"
+#include "MPU6050_module.h"
 
 void setup()
 {

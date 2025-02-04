@@ -17,27 +17,28 @@
 //#define ENABLE_VERTICAL_AXIS_Y
 //#define ENABLE_VERTICAL_AXIS_Z
 
-//#define ENABLE_PRINT_MOTION_CONFIG
+#define ENABLE_PRINT_MOTION_CONFIG
 #define ENABLE_PRINT_MOTION_INFO
 #define ENABLE_CALCULATE_ROTATION
 #define ENABLE_CALCULATE_AXES
 #define ENABLE_MOTION_INTERRUP
+
+#define CONFIG_PIN_SDA                        21
+#define CONFIG_PIN_SCL                        20
+#define CONFIG_ACCELEROMETER_RANGE            MPU6050_RANGE_16_G         // MPU6050_RANGE_4_G          RELEVANTE 
+#define CONFIG_GYROSCOPE_RANGE                MPU6050_RANGE_500_DEG
+#define CONFIG_BANDWIDTH_RANGE                MPU6050_BAND_5_HZ//MPU6050_BAND_21_HZ        // MPU6050_BAND_21_HZ         RELEVANTE
+#define CONFIG_PASS_FILTER                    MPU6050_HIGHPASS_DISABLE
+#define CONFIG_SAMPLE_DIVISOR                 0                         //                            RELEVANTE
+#define CONFIG_MOTION_INTERRUP                true
+#define CONFIG_MOTION_THRESHOLD               1                         //                            RELEVANTE
+#define CONFIG_MOTION_DURATION                1                         //                            RELEVANTE
 
 #define CONFIG_SPEED_DETEC_MOVE               0.1f
 #define CONFIG_MIN_DELTA_TIME_CALCULATE       0.001
 #define CONFIG_NUM_SAMPLES                    5
 #define CONFIG_CALIBRATION_TOLERANCE          0.5f
 #define CONFIG_TIME_TO_SAVE                   TIME_60S
-
-#define CONFIG_PIN_SDA                        21
-#define CONFIG_PIN_SCL                        20
-#define CONFIG_ACCELEROMETER_RANGE            MPU6050_RANGE_2_G
-#define CONFIG_DEGREES_RANGE                  MPU6050_RANGE_500_DEG
-#define CONFIG_BANDWIDTH_RANGE                MPU6050_BAND_21_HZ
-#define CONFIG_PASS_FILTER                    MPU6050_HIGHPASS_DISABLE
-#define CONFIG_MOTION_INTERRUP                true
-#define CONFIG_MOTION_THRESHOLD               5
-#define CONFIG_MOTION_DURATION                10
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
