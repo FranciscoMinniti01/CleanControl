@@ -145,30 +145,26 @@ bool calibration()
   uint64_t control_fun_time = get_time();
   bool IsMove;
 
-  mpu.setMotionInterrupt(true);
-  mpu.setMotionDetectionThreshold(5);
-  mpu.setMotionDetectionDuration(5);
-  delay(10);
-
   while (count < CONFIG_NUM_SAMPLES)
   {
     IsMove = mpu.getMotionInterruptStatus();
-    if(IsMove) continue;
     Serial.printf("Movimiento = %s\n",(IsMove ? "YES" : "NO") );
+    if(IsMove) continue;
 
     if(!read_sensor_info()) continue;
 
     if (count > 0)
     {
-      bool xStable = abs(motion.A_raw.X - samples[count-1].X) / abs(samples[count-1].X + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool yStable = abs(motion.A_raw.Y - samples[count-1].Y) / abs(samples[count-1].Y + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool zStable = abs(motion.A_raw.Z - samples[count-1].Z) / abs(samples[count-1].Z + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool xStable = abs(motion.A_raw.X - samples[count-1].X) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool yStable = abs(motion.A_raw.Y - samples[count-1].Y) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool zStable = abs(motion.A_raw.Z - samples[count-1].Z) <= CONFIG_CALIBRATION_TOLERANCE;
       if (!(xStable && yStable && zStable))
       {
         delay(10);
         continue;
       }
     }
+
     samples[count].X = motion.A_raw.X;
     samples[count].Y = motion.A_raw.Y;
     samples[count].Z = motion.A_raw.Z;
@@ -310,8 +306,6 @@ bool motion_init()
   return false;
   #endif
 
-  //calibration();
-
   #ifdef ENABLE_MOTION_INTERRUP
   mpu.setMotionInterrupt(CONFIG_MOTION_INTERRUP);
   mpu.setMotionDetectionThreshold(CONFIG_MOTION_THRESHOLD);
@@ -322,7 +316,9 @@ bool motion_init()
   //set_timer(&timer_to_save, CONFIG_TIME_TO_SAVE, NULL);
   //delta_time = get_time();
 
-  print_motion_config();
+  calibration();
+
+  //print_motion_config();
 
   //restorar_motion_info();
 
@@ -331,17 +327,6 @@ bool motion_init()
 
 void motion_control()
 {
-  static uint16_t counter_to_print = 0;
-  if(counter_to_print >= 1000)
-  {
-    Serial.printf("%s\n",(mpu.getMotionInterruptStatus() ? "YEEEES" : "NO") );
-    counter_to_print = 0;
-  }
-  else counter_to_print++;
-}
-
-/*void motion_control()
-{
   static uint8_t counter = 0;
 
   control_fun_time = get_time();
@@ -349,12 +334,20 @@ void motion_control()
   if(!read_sensor_info()) return;
 
   // ACCELERATION --------------------------------------------------
-  motion.A.X = ( samples_sum.X - samples[counter].X + (motion.A_raw.X - motion.A_corrections.X) ) / CONFIG_NUM_SAMPLES;
+  samples_sum.X -= samples[counter].X;
   samples[counter].X = motion.A_raw.X - motion.A_corrections.X;
-  motion.A.Y = ( samples_sum.Y - samples[counter].Y + (motion.A_raw.Y - motion.A_corrections.Y) ) / CONFIG_NUM_SAMPLES;
+  samples_sum.X += samples[counter].X;
+  motion.A.X = samples_sum.X / CONFIG_NUM_SAMPLES;
+
+  samples_sum.Y -= samples[counter].Y;
   samples[counter].Y = motion.A_raw.Y - motion.A_corrections.Y;
-  motion.A.Z = ( samples_sum.Z - samples[counter].Z + (motion.A_raw.Z - motion.A_corrections.Z) ) / CONFIG_NUM_SAMPLES;
+  samples_sum.Y += samples[counter].Y;
+  motion.A.Y = samples_sum.Y / CONFIG_NUM_SAMPLES;
+
+  samples_sum.Z -= samples[counter].Z;
   samples[counter].Z = motion.A_raw.Z - motion.A_corrections.Z;
+  samples_sum.Z += samples[counter].Z;
+  motion.A.Z = samples_sum.Z / CONFIG_NUM_SAMPLES;
 
   motion.Acceleration = sqrt(pow(motion.A.X, 2) + pow(motion.A.Y, 2) + pow(motion.A.Z, 2));
 
@@ -392,30 +385,50 @@ void motion_control()
   }
 
   // MOVE FLAG --------------------------------------------------
-  #ifdef ENABLE_MOTION_INTERRUP
-  motion.IsMove = mpu.getMotionInterruptStatus();
-  /*static bool lastIsMove = false;
+  int weight = 0;
+  bool MotionInterrupt = mpu.getMotionInterruptStatus();
+  bool SpeedThreshold = (motion.Speed > CONFIG_SPEED_DETEC_MOVE ? true : false);
+  static bool LastMotionInterrupt;
+  static bool LastSpeedThreshold;
+  if (MotionInterrupt)      weight += 3;  // Mayor peso a la interrupción actual
+  if (SpeedThreshold)       weight += 3;  // Mayor peso a la velocidad actual
+  if (LastMotionInterrupt)  weight += 1;
+  if (LastSpeedThreshold)   weight += 1;
+  motion.IsMove = (weight >= 4);
+  static uint16_t counter_to_print = 0;
+  if(counter_to_print > 250)
+  {
+    Serial.printf("     Movimiento          = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+    Serial.printf("     MotionInterrupt     = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+    Serial.printf("     SpeedThreshold      = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+    Serial.printf("     LastMotionInterrupt = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+    Serial.printf("     LastSpeedThreshold  = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+    counter_to_print = 0;
+  }
+  else counter_to_print++;
+  LastMotionInterrupt = MotionInterrupt;
+  LastSpeedThreshold = SpeedThreshold;
+  /*motion.IsMove = mpu.getMotionInterruptStatus();
+  static bool lastIsMove = false;
   if(motion.IsMove != lastIsMove){
     if(motion.IsMove) Serial.println("EN MOVIMIENTO");
     else Serial.println("QUIETO");
   }
-  lastIsMove = motion.IsMove;*/
-  /*#else//ENABLE_MOTION_INTERRUP
+  lastIsMove = motion.IsMove;
   if(motion.Speed > CONFIG_SPEED_DETEC_MOVE) motion.IsMove = true;
-  else motion.IsMove = false;
-  #endif//ENABLE_MOTION_INTERRUP*/
-
+  else motion.IsMove = false;*/
+ 
   // ACTIVE TIME --------------------------------------------------
-  /*static float control_active_time = 0;
+  static float control_active_time = 0;
   if(motion.IsMove) control_active_time += DT;
   if(control_active_time >= 1)
   {
     motion.ActiveTime += (uint64_t)control_active_time;
     control_active_time = 0;
-  }*/
+  }
 
-  /*// ROTATION --------------------------------------------------
-  #ifdef ENABLE_CALCULATE_ROTATION
+  // ROTATION --------------------------------------------------
+  /*#ifdef ENABLE_CALCULATE_ROTATION
   motion_info.Inclination_axes_a.X = atan2(a.acceleration.x, sqrt(pow(a.acceleration.y, 2) + pow(a.acceleration.z, 2))) * 180 / PI;
   motion_info.Inclination_axes_a.Y = atan2(a.acceleration.y, sqrt(pow(a.acceleration.x, 2) + pow(a.acceleration.z - 9.81, 2))) * 180 / PI;
   motion_info.Inclination_axes_a.Z = 0;
@@ -427,7 +440,7 @@ void motion_control()
 
   // --------------------------------------------------
 
-  /*if(++counter >= CONFIG_NUM_SAMPLES) counter = 0;
+  if(++counter >= CONFIG_NUM_SAMPLES) counter = 0;
 
   print_motion_info();
 
@@ -435,7 +448,7 @@ void motion_control()
   {
     //save_motion_info();
   }
-}*/
+}
 
 motion_info_t* get_motion_info()
 {
