@@ -352,8 +352,9 @@ void motion_control()
   motion.Acceleration = sqrt(pow(motion.A.X, 2) + pow(motion.A.Y, 2) + pow(motion.A.Z, 2));
 
   // DELTA TIME --------------------------------------------------
-  float DT = get_delta_time(delta_time)/1000000.0;
+  float DT = get_delta_time(delta_time);
   if(DT < CONFIG_MIN_DELTA_TIME_CALCULATE) return;
+  DT /= 1000000.0;
   delta_time = get_time();
 
   // SPEED --------------------------------------------------

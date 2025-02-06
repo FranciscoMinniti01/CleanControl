@@ -14,15 +14,15 @@
 typedef struct
 {
   void*     data;
-  size_t    len;
+  size_t    length;
   String    key;
 } storage_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-void set_data_storage(storage_t* s, void* d, size_t l, String k);
-bool get_data(storage_t* s);
-bool seve_data(storage_t* s);
+void set_storage(storage_t* s, void* d, size_t l, String k);
+bool get_storage(storage_t* s);
+bool save_storage(storage_t* s);
 
 // ----------------------------------------------------------------------------------------------------
 

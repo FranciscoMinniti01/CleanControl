@@ -7,13 +7,17 @@
 #include "HardwareSerial.h"
 #include <vector>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/portmacro.h"
+
 #include "time.h"
 #include "esp32-hal-timer.h"
 
 // TIMER CONFIG ----------------------------------------------------------------------------------------------------
 
-#define TIME_FREC             1000000
-#define BASE_TIME             10000
+#define TIME_FREQUENCY        1000000
+#define TIME_BASE             10000
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -29,10 +33,10 @@ typedef void (*cb_timer)();
 
 typedef struct
 {
-    uint16_t      conter;
+    uint16_t      counter;
     uint16_t      comparator;
     bool          flag;
-    cb_timer      cb;
+    cb_timer      callback;
 }my_timer_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------

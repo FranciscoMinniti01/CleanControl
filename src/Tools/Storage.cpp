@@ -1,6 +1,6 @@
 // INCLUDE ----------------------------------------------------------------------------------------------------
 
-#include "storage.h"
+#include "Storage.h"
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
@@ -8,16 +8,20 @@ Preferences preferences;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-void set_data_storage(storage_t* s, void* d, size_t l, String k)
+void set_storage(storage_t* s, void* d, size_t l, String k)
 {
-  s->data = d;
-  s->len  = l;
-  s->key  = k;
+  if(s == NULL) return;
+  if(d == NULL) return;
+  s->data   = d;
+  s->length = l;
+  s->key    = k;
 }
 
-bool get_data(storage_t* s)
+bool get_storage(storage_t* s)
 {
   bool flag = true;
+
+  if(s == NULL) return false;
 
   if( !preferences.begin(NAME_SPACE) )
   { 
@@ -25,10 +29,10 @@ bool get_data(storage_t* s)
     return false;
   }
 
-  if( !preferences.getBytes( s->key.c_str(), s->data, s->len ) )
+  if( !preferences.getBytes( s->key.c_str(), s->data, s->length ) )
   {
     char* char_ptr = (char*)s->data;
-    for(uint8_t i = 0; i<s->len ; i++) char_ptr[i] = 0;
+    for(uint8_t i = 0; i<s->length ; i++) char_ptr[i] = 0;
     flag = false;
   }
 
@@ -37,9 +41,11 @@ bool get_data(storage_t* s)
   return flag;
 }
 
-bool seve_data(storage_t* s)
+bool save_storage(storage_t* s)
 {
   bool flag = true;
+
+  if(s == NULL) return false;
 
   if( !preferences.begin(NAME_SPACE) )
   { 
@@ -47,7 +53,7 @@ bool seve_data(storage_t* s)
     return false;
   }
 
-  if( !preferences.putBytes( s->key.c_str(), s->data, s->len ) )
+  if( !preferences.putBytes( s->key.c_str(), s->data, s->length ) )
   {
     Serial.println("ERROR: Preferences putBytes failed");
     flag = false;

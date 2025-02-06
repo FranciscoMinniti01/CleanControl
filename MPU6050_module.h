@@ -35,7 +35,7 @@
 #define CONFIG_MOTION_DURATION                1
 
 #define CONFIG_SPEED_DETEC_MOVE               0.1f
-#define CONFIG_MIN_DELTA_TIME_CALCULATE       0.001
+#define CONFIG_MIN_DELTA_TIME_CALCULATE       1000
 #define CONFIG_NUM_SAMPLES                    5
 #define CONFIG_CALIBRATION_TOLERANCE          0.5f
 #define CONFIG_TIME_TO_SAVE                   TIME_60S
