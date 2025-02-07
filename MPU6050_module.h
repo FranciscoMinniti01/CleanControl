@@ -8,8 +8,8 @@
 #include <Wire.h>
 #include <math.h>
 
-#include "my_timer.h"
-#include "storage.h"
+#include "src/Tools/Storage.h"
+#include "src/Tools/TimerManager.h"
 
 // CONFIG ----------------------------------------------------------------------------------------------------
 
@@ -19,9 +19,7 @@
 
 #define ENABLE_PRINT_MOTION_CONFIG
 #define ENABLE_PRINT_MOTION_INFO
-#define ENABLE_CALCULATE_ROTATION
-#define ENABLE_CALCULATE_AXES
-#define ENABLE_MOTION_INTERRUP
+//#define ENABLE_CALCULATE_AXES
 
 #define CONFIG_PIN_SDA                        21
 #define CONFIG_PIN_SCL                        20
@@ -38,7 +36,6 @@
 #define CONFIG_MIN_DELTA_TIME_CALCULATE       1000
 #define CONFIG_NUM_SAMPLES                    5
 #define CONFIG_CALIBRATION_TOLERANCE          0.5f
-#define CONFIG_TIME_TO_SAVE                   TIME_60S
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -68,7 +65,6 @@ typedef struct {
 
   bool          IsMove;
   uint64_t      ActiveTime;
-  //cartesian_t   Inclination;
 }motion_info_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------

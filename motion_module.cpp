@@ -11,40 +11,7 @@ static cartesian_t      samples_sum;
 static uint64_t         delta_time;
 static uint64_t         control_fun_time;
 
-storage_t Distance_axes_storage;
-storage_t Distance_storage;
-storage_t activeTime_storage;
-
-static my_timer_t timer_to_save;
-
 // PRIVATE FUNCTIONS ----------------------------------------------------------------------------------------------------
-
-/*void restorar_motion_info()
-{
-  set_data_storage( &Distance_axes_storage, 
-                    (void*)&motion_info.D, 
-                    sizeof(motion_info.D),
-                    KEY_DISTAN_A);
-  set_data_storage( &Distance_storage, 
-                    (void*)&motion_info.Distance, 
-                    sizeof(motion_info.Distance),
-                    KEY_DISTAN_T);
-  set_data_storage( &activeTime_storage, 
-                    (void*)&motion_info.ActiveTime, 
-                    sizeof(motion_info.ActiveTime),
-                    KEY_ACTIVE_T);
-
-  if(get_data(&Distance_axes_storage))  Serial.printf("INFO: get distance axes\n");
-  if(get_data(&Distance_storage))       Serial.printf("INFO: get distance\n");
-  if(get_data(&activeTime_storage))     Serial.printf("INFO: get active time\n");
-}
-
-void save_motion_info()
-{
-  if(!seve_data(&Distance_axes_storage)) Serial.printf("ERROR: can not seve distance axes\n");
-  if(!seve_data(&Distance_storage))      Serial.printf("ERROR: can not seve distance\n");
-  if(!seve_data(&activeTime_storage))    Serial.printf("ERROR: can not seve active time\n");
-}*/
 
 bool read_sensor_info()
 {
@@ -76,74 +43,14 @@ bool read_sensor_info()
   #endif
 }
 
-/*void calibration()
-{
-  int count = 0;
-  uint64_t control_fun_time = get_time();
-
-  while (count < CONFIG_NUM_SAMPLES)
-  {
-    if(!read_sensor_info()) continue;
-
-    if (count > 0)
-    {
-      bool xStable = abs(motion.A_raw.X - samples[count-1].X) / abs(samples[count-1].X + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool yStable = abs(motion.A_raw.Y - samples[count-1].Y) / abs(samples[count-1].Y + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool zStable = abs(motion.A_raw.Z - samples[count-1].Z) / abs(samples[count-1].Z + 1e-6) <= CONFIG_CALIBRATION_TOLERANCE;
-      if (!(xStable && yStable && zStable))
-      {
-        delay(10);
-        continue;
-      }
-    }
-    samples[count].X = motion.A_raw.X;
-    samples[count].Y = motion.A_raw.Y;
-    samples[count].Z = motion.A_raw.Z;
-
-    samples_sum.X += motion.A_raw.X;
-    samples_sum.Y += motion.A_raw.Y;
-    samples_sum.Z += motion.A_raw.Z;
-
-    Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", count, samples[count].X, samples[count].Y, samples[count].Z);
-
-    count++;
-
-    delay(10);
-  }
-
-  motion.A_corrections.X = samples_sum.X / CONFIG_NUM_SAMPLES;
-  motion.A_corrections.Y = samples_sum.Y / CONFIG_NUM_SAMPLES;
-  motion.A_corrections.Z = samples_sum.Z / CONFIG_NUM_SAMPLES;
-
-  samples_sum.X = 0;
-  samples_sum.Y = 0;
-  samples_sum.Z = 0;
-
-  for(uint8_t i = 0 ; i<CONFIG_NUM_SAMPLES ; i++)
-  {
-    samples[i].X -= motion.A_corrections.X;
-    samples[i].Y -= motion.A_corrections.Y;
-    samples[i].Z -= motion.A_corrections.Z;
-
-    samples_sum.X += samples[i].X;
-    samples_sum.Y += samples[i].Y;
-    samples_sum.Z += samples[i].Z;
-  }
-
-  Serial.println("Calibration Complete:");
-  Serial.printf ("     Time = %.10f s\n", get_delta_time(control_fun_time)/1000000.0 );
-  Serial.printf ("     Correction Factor:      X=%f - Y=%f - Z=%f\n", motion.A_corrections.X, motion.A_corrections.Y, motion.A_corrections.Z);
-  Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", motion.A_raw.X-motion.A_corrections.X, motion.A_raw.Y-motion.A_corrections.Y, motion.A_raw.Z-motion.A_corrections.Z);
-  Serial.printf ("     Aceleration Average:    X=%f - Y=%f - Z=%f\n", samples_sum.X/CONFIG_NUM_SAMPLES , samples_sum.Y/CONFIG_NUM_SAMPLES, samples_sum.Z/CONFIG_NUM_SAMPLES);
-}*/
-
 bool calibration()
 {
   int count = 0;
   cartesian_t samples_sum2 = {0,0,0};
   cartesian_t stdDev = {0,0,0}; 
-  uint64_t control_fun_time = get_time();
   bool IsMove;
+
+  control_fun_time = get_time();
 
   while (count < CONFIG_NUM_SAMPLES)
   {
@@ -196,7 +103,7 @@ bool calibration()
   // Verificar si la calibración es válida
   if (stdDev.X > CONFIG_CALIBRATION_TOLERANCE || stdDev.Y > CONFIG_CALIBRATION_TOLERANCE || stdDev.Z > CONFIG_CALIBRATION_TOLERANCE)
   {
-    Serial.println("ERROR: Alta variabilidad en la calibración. Intente nuevamente.");
+    Serial.println("ERROR: High variability in calibration. Try again.");
     return false;
   }
 
@@ -216,9 +123,10 @@ bool calibration()
   }
 
   Serial.println("Calibration Complete:");
-  Serial.printf ("     Time = %.10f s\n", get_delta_time(control_fun_time)/1000000.0 );
+  Serial.printf ("     Calibration Time = %.10f ms\n", get_delta_time(control_fun_time)/1000.0 );
   Serial.printf ("     Correction Factor:      X=%f - Y=%f - Z=%f\n", motion.A_corrections.X, motion.A_corrections.Y, motion.A_corrections.Z);
-  Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", motion.A_raw.X-motion.A_corrections.X, motion.A_raw.Y-motion.A_corrections.Y, motion.A_raw.Z-motion.A_corrections.Z);
+  Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", motion.A_raw.X, motion.A_raw.Y, motion.A_raw.Z);
+  Serial.printf ("     Corrected Acceleration: X=%f - Y=%f - Z=%f\n", motion.A_raw.X-motion.A_corrections.X, motion.A_raw.Y-motion.A_corrections.Y, motion.A_raw.Z-motion.A_corrections.Z);
   Serial.printf ("     Aceleration Average:    X=%f - Y=%f - Z=%f\n", samples_sum.X/CONFIG_NUM_SAMPLES , samples_sum.Y/CONFIG_NUM_SAMPLES, samples_sum.Z/CONFIG_NUM_SAMPLES);
 
   return true;
@@ -243,7 +151,7 @@ void print_motion_info()
   static uint16_t counter_to_print = 0;
   if(counter_to_print > 250)
   {
-    Serial.printf("MOTION INFO:\n");
+    Serial.printf("Movement information:\n");
     
     Serial.printf("     Control Time = %.10f s\n" , get_delta_time(control_fun_time)/1000000.0 );
     Serial.printf("     Active Time  = %d s\n"    , motion.ActiveTime);
@@ -306,21 +214,16 @@ bool motion_init()
   return false;
   #endif
 
-  #ifdef ENABLE_MOTION_INTERRUP
   mpu.setMotionInterrupt(CONFIG_MOTION_INTERRUP);
   mpu.setMotionDetectionThreshold(CONFIG_MOTION_THRESHOLD);
   mpu.setMotionDetectionDuration(CONFIG_MOTION_DURATION);
   delay(100);
-  #endif//ENABLE_MOTION_INTERRUP
-
-  //set_timer(&timer_to_save, CONFIG_TIME_TO_SAVE, NULL);
-  //delta_time = get_time();
 
   calibration();
 
-  //print_motion_config();
+  print_motion_config();
 
-  //restorar_motion_info();
+  delta_time = get_time();
 
   return true;
 }
@@ -409,15 +312,6 @@ void motion_control()
   else counter_to_print++;
   LastMotionInterrupt = MotionInterrupt;
   LastSpeedThreshold = SpeedThreshold;
-  /*motion.IsMove = mpu.getMotionInterruptStatus();
-  static bool lastIsMove = false;
-  if(motion.IsMove != lastIsMove){
-    if(motion.IsMove) Serial.println("EN MOVIMIENTO");
-    else Serial.println("QUIETO");
-  }
-  lastIsMove = motion.IsMove;
-  if(motion.Speed > CONFIG_SPEED_DETEC_MOVE) motion.IsMove = true;
-  else motion.IsMove = false;*/
  
   // ACTIVE TIME --------------------------------------------------
   static float control_active_time = 0;
@@ -428,27 +322,11 @@ void motion_control()
     control_active_time = 0;
   }
 
-  // ROTATION --------------------------------------------------
-  /*#ifdef ENABLE_CALCULATE_ROTATION
-  motion_info.Inclination_axes_a.X = atan2(a.acceleration.x, sqrt(pow(a.acceleration.y, 2) + pow(a.acceleration.z, 2))) * 180 / PI;
-  motion_info.Inclination_axes_a.Y = atan2(a.acceleration.y, sqrt(pow(a.acceleration.x, 2) + pow(a.acceleration.z - 9.81, 2))) * 180 / PI;
-  motion_info.Inclination_axes_a.Z = 0;
-
-  motion_info.Inclination_axes_g.X += a.gyro.x * DT;
-  motion_info.Inclination_axes_g.Y += a.gyro.y * DT;
-  motion_info.Inclination_axes_g.Z += a.gyro.z * DT;
-  #endif//ENABLE_CALCULATE_ROTATION*/
-
   // --------------------------------------------------
 
   if(++counter >= CONFIG_NUM_SAMPLES) counter = 0;
 
   print_motion_info();
-
-  if( get_flag_timer( &timer_to_save ) )
-  {
-    //save_motion_info();
-  }
 }
 
 motion_info_t* get_motion_info()
