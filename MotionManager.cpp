@@ -46,7 +46,7 @@ bool read_sensor_info()
 bool calibration()
 {
   int count = 0;
-  cartesian_t samples_sum2 = {0,0,0};
+  cartesian_t sum2 = {0,0,0};
   cartesian_t stdDev = {0,0,0}; 
   bool IsMove;
 
@@ -80,9 +80,9 @@ bool calibration()
     samples_sum.Y += motion.A_raw.Y;
     samples_sum.Z += motion.A_raw.Z;
 
-    samples_sum2.X += pow(motion.A_raw.X, 2);
-    samples_sum2.Y += pow(motion.A_raw.Y, 2);
-    samples_sum2.Z += pow(motion.A_raw.Z, 2);
+    sum2.X += pow(motion.A_raw.X, 2);
+    sum2.Y += pow(motion.A_raw.Y, 2);
+    sum2.Z += pow(motion.A_raw.Z, 2);
 
     Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", count, samples[count].X, samples[count].Y, samples[count].Z);
 
@@ -96,9 +96,9 @@ bool calibration()
   motion.A_corrections.Z = samples_sum.Z / CONFIG_NUM_SAMPLES;
 
   // Calcular desviación estándar
-  stdDev.X = sqrt((samples_sum2.X / CONFIG_NUM_SAMPLES) - pow(motion.A_corrections.X, 2));
-  stdDev.Y = sqrt((samples_sum2.Y / CONFIG_NUM_SAMPLES) - pow(motion.A_corrections.Y, 2));
-  stdDev.Z = sqrt((samples_sum2.Z / CONFIG_NUM_SAMPLES) - pow(motion.A_corrections.Z, 2));
+  stdDev.X = sqrt((samples_sum2.X / (CONFIG_NUM_SAMPLES - 1)) - pow(motion.A_corrections.X, 2) * (CONFIG_NUM_SAMPLES / (CONFIG_NUM_SAMPLES - 1)));
+  stdDev.Y = sqrt((samples_sum2.Y / (CONFIG_NUM_SAMPLES - 1)) - pow(motion.A_corrections.Y, 2) * (CONFIG_NUM_SAMPLES / (CONFIG_NUM_SAMPLES - 1)));
+  stdDev.Z = sqrt((samples_sum2.Z / (CONFIG_NUM_SAMPLES - 1)) - pow(motion.A_corrections.Z, 2) * (CONFIG_NUM_SAMPLES / (CONFIG_NUM_SAMPLES - 1)));
 
   // Verificar si la calibración es válida
   if (stdDev.X > CONFIG_CALIBRATION_TOLERANCE || stdDev.Y > CONFIG_CALIBRATION_TOLERANCE || stdDev.Z > CONFIG_CALIBRATION_TOLERANCE)
