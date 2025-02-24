@@ -8,7 +8,7 @@
 #include <Wire.h>
 #include <math.h>
 
-#include "src/Tools/Storage.h"
+//#include "src/Tools/Storage.h"
 #include "src/Tools/TimerManager.h"
 
 // CONFIG ----------------------------------------------------------------------------------------------------
@@ -17,9 +17,10 @@
 //#define ENABLE_VERTICAL_AXIS_Y
 //#define ENABLE_VERTICAL_AXIS_Z
 
-#define ENABLE_PRINT_MOTION_CONFIG
+//#define ENABLE_PRINT_MOTION_CONFIG
 #define ENABLE_PRINT_MOTION_INFO
 //#define ENABLE_CALCULATE_AXES
+#define ENABLE_CALIBRATION_PRINT
 
 #define CONFIG_PIN_SDA                        21
 #define CONFIG_PIN_SCL                        20
@@ -33,9 +34,15 @@
 #define CONFIG_MOTION_DURATION                1
 
 #define CONFIG_SPEED_DETEC_MOVE               0.1f
-#define CONFIG_MIN_DELTA_TIME_CALCULATE       1000
+#define CONFIG_MIN_DELTA_TIME                 1000
 #define CONFIG_NUM_SAMPLES                    5
 #define CONFIG_CALIBRATION_TOLERANCE          0.5f
+
+
+#define CONFIG_CAL_NUM_SAMPLES                10
+#define CONFIG_CAL_MAX_ATTEMPTS               30
+
+#define CONFIG_NUM_SAPLES                    10
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -52,8 +59,15 @@ typedef struct {
 }cartesian_t;
 
 typedef struct {
+  cartesian_t     Buffer[CONFIG_NUM_SAMPLES] = {0};  
+  cartesian_t     Sum   = {0,0,0};
+  uint8_t         Index = 0;
+  uint8_t         Count = 0;
+} MovingAverage_t;
+
+typedef struct {
   cartesian_t   A_raw;
-  cartesian_t   A_corrections;
+  cartesian_t   A_Correction;
   
   cartesian_t   A;
   cartesian_t   S;
@@ -69,8 +83,8 @@ typedef struct {
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-bool motion_init();
-void motion_control();
+bool MotionInit();
+void MotionControl();
 motion_info_t* get_motion_info();
 
 // ----------------------------------------------------------------------------------------------------
