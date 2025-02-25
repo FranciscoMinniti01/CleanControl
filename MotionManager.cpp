@@ -106,9 +106,6 @@ bool Calibration()
   motion.A_Correction.Z = Sum.Z / CONFIG_CAL_NUM_SAMPLES;
 
   // Calcular desviación estándar
-  //StdDev.X = sqrt((Sum2.X / (CONFIG_CAL_NUM_SAMPLES - 1)) - pow(motion.A_Correction.X, 2) * (CONFIG_CAL_NUM_SAMPLES / (CONFIG_CAL_NUM_SAMPLES - 1)));
-  //StdDev.Y = sqrt((Sum2.Y / (CONFIG_CAL_NUM_SAMPLES - 1)) - pow(motion.A_Correction.Y, 2) * (CONFIG_CAL_NUM_SAMPLES / (CONFIG_CAL_NUM_SAMPLES - 1)));
-  //StdDev.Z = sqrt((Sum2.Z / (CONFIG_CAL_NUM_SAMPLES - 1)) - pow(motion.A_Correction.Z, 2) * (CONFIG_CAL_NUM_SAMPLES / (CONFIG_CAL_NUM_SAMPLES - 1)));
   StdDev.X = sqrt((Sum2.X / CONFIG_CAL_NUM_SAMPLES) - pow(motion.A_Correction.X, 2));
   StdDev.Y = sqrt((Sum2.Y / CONFIG_CAL_NUM_SAMPLES) - pow(motion.A_Correction.Y, 2));
   StdDev.Z = sqrt((Sum2.Z / CONFIG_CAL_NUM_SAMPLES) - pow(motion.A_Correction.Z, 2));
@@ -131,7 +128,7 @@ bool Calibration()
   return true;
 }
 
-bool UpdateMovingAverage()
+/*bool UpdateMovingAverage()
 {
   if(!ReadSensorInfo()) return false;
 
@@ -155,9 +152,9 @@ bool UpdateMovingAverage()
   motion.A.Z = MovingAverage.Sum.Z / MovingAverage.Count;
 
   return true;
-}
+}*/
 
-void PrintMotionConfig()
+/*void PrintMotionConfig()
 {
   #ifdef ENABLE_PRINT_MOTION_CONFIG
   Serial.printf("MPU6050 Driver configuration:\n");
@@ -168,7 +165,7 @@ void PrintMotionConfig()
   Serial.printf("     Sample Rate Divisor:  %d\n"   , mpu.getSampleRateDivisor() );
   Serial.printf("     Clock:                %d\n"   , mpu.getClock() );
   #endif//ENABLE_PRINT_MOTION_CONFIG
-}
+}*/
 
 void PrintMotionInfo()
 {
@@ -176,10 +173,10 @@ void PrintMotionInfo()
   static uint16_t counter_to_print = 0;
   if(counter_to_print > 250)
   {
-    Serial.printf("\nMovement information:\n");
+    Serial.printf("\nMove info:\n");
     
-    Serial.printf("     Active Time  = %d s\n"    , motion.ActiveTime);
-    Serial.printf("     Movimiento   = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+    //Serial.printf("     Active Time  = %d s\n"    , motion.ActiveTime);
+    //Serial.printf("     Movimiento   = %s\n"      , (motion.IsMove ? "YES" : "NO") );
     
     Serial.printf("     AX = %f\n"                , motion.A.X);
     Serial.printf("     AY = %f\n"                , motion.A.Y);
@@ -223,8 +220,8 @@ bool MotionInit()
   
   mpu.setAccelerometerRange(CONFIG_ACCELEROMETER_RANGE);
   mpu.setGyroRange(CONFIG_GYROSCOPE_RANGE);
-  mpu.setFilterBandwidth(CONFIG_BANDWIDTH_RANGE);
-  mpu.setHighPassFilter(CONFIG_PASS_FILTER);
+  mpu.setFilterBandwidth(CONFIG_DOWN_PASS_FILTER);
+  mpu.setHighPassFilter(CONFIG_HIGH_PASS_FILTER);
   mpu.setSampleRateDivisor(CONFIG_SAMPLE_DIVISOR);
 
   #if defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
@@ -238,14 +235,14 @@ bool MotionInit()
   return false;
   #endif
 
-  mpu.setMotionInterrupt(CONFIG_MOTION_INTERRUP);
   mpu.setMotionDetectionThreshold(CONFIG_MOTION_THRESHOLD);
   mpu.setMotionDetectionDuration(CONFIG_MOTION_DURATION);
+  mpu.setMotionInterrupt(CONFIG_MOTION_INTERRUP);
   delay(100);
 
   Calibration();
 
-  PrintMotionConfig();
+  //PrintMotionConfig();
 
   delta_time = get_time_us();
 
@@ -254,19 +251,17 @@ bool MotionInit()
 
 void MotionControl()
 {
-  uint64_t control_fun_time = get_time_us();
-
   // ACCELERATION --------------------------------------------------
 
-  if(!UpdateMovingAverage()) return;
-  motion.Acceleration = sqrt(pow(motion.A.X, 2) + pow(motion.A.Y, 2) + pow(motion.A.Z, 2));
+  /*if(!UpdateMovingAverage()) return;
+  motion.Acceleration = sqrt(pow(motion.A.X, 2) + pow(motion.A.Y, 2) + pow(motion.A.Z, 2));*/
 
   // DELTA TIME --------------------------------------------------
 
-  float DT = get_delta_time_us(delta_time);
+  /*float DT = get_delta_time_us(delta_time);
   if(DT < CONFIG_MIN_DELTA_TIME) return;
   DT /= 1000000.0;
-  delta_time = get_time_us();
+  delta_time = get_time_us();*/
 
   // SPEED --------------------------------------------------
   /*if(abs(motion.Acceleration) > 0.1f)
@@ -300,16 +295,16 @@ void MotionControl()
   
   int weight = 0;
   bool MotionInterrupt = mpu.getMotionInterruptStatus();
-  //bool SpeedThreshold = (motion.Speed > CONFIG_SPEED_DETEC_MOVE ? true : false);
   static bool LastMotionInterrupt;
+  //bool SpeedThreshold = (motion.Speed > CONFIG_SPEED_DETEC_MOVE ? true : false);
   //static bool LastSpeedThreshold;
   if (MotionInterrupt)      weight += 3;  // Mayor peso a la interrupción actual
-  //if (SpeedThreshold)       weight += 3;  // Mayor peso a la velocidad actual
   if (LastMotionInterrupt)  weight += 1;
+  //if (SpeedThreshold)       weight += 3;  // Mayor peso a la velocidad actual
   //if (LastSpeedThreshold)   weight += 1;
   motion.IsMove = (weight >= 4);
   static uint16_t counter_to_print = 0;
-  if(counter_to_print > 500)
+  if(counter_to_print > 250)
   {
     Serial.printf("\n     Movimiento          = %s\n"      , (motion.IsMove ? "YES" : "NO") );
     Serial.printf("     MotionInterrupt     = %s\n"      , (MotionInterrupt ? "YES" : "NO") );
@@ -334,14 +329,14 @@ void MotionControl()
   */
   // --------------------------------------------------
 
-  if(counter_to_print > 500) Serial.printf("Function time control = %.10f s\n" , get_delta_time_us(control_fun_time)/1000000.0 );
+  //if(counter_to_print > 500) Serial.printf("Function time control = %.10f s\n" , get_delta_time_us(control_fun_time)/1000000.0 );
 
-  PrintMotionInfo();
+  //PrintMotionInfo();
 }
 
-motion_info_t* get_motion_info()
+/*motion_info_t* get_motion_info()
 {
   return &motion;
-}
+}*/
 
 // ----------------------------------------------------------------------------------------------------
