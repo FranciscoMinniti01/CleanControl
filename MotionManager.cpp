@@ -4,36 +4,37 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-Adafruit_MPU6050        mpu;
-static motion_info_t    motion;
-static uint64_t         delta_time;
-static MovingAverage_t  MovingAverage; 
+Adafruit_MPU6050        MPU;
+static motion_info_t    Motion;
+static uint64_t         DeltaTime;
+static MovingAverage_t  MovingAverage;
+static cartesian        Correction;
 
 // PRIVATE FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 bool ReadSensorInfo()
 {
   sensors_event_t a, g, temp;
-  if(!mpu.getEvent(&a, &g, &temp))
+  if(!MPU.getEvent(&a, &g, &temp))
   {
     Serial.println("ERROR: MPU6050 sensor reading failed.");
     return false;
   }
   
   #if defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
-  motion.A_raw.X = a.acceleration.z;
-  motion.A_raw.Y = a.acceleration.y;
-  motion.A_raw.Z = a.acceleration.x;
+  Motion.A_raw.X = a.acceleration.z;
+  Motion.A_raw.Y = a.acceleration.y;
+  Motion.A_raw.Z = a.acceleration.x;
   return true;
   #elif !defined(ENABLE_VERTICAL_AXIS_X) && defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
-  motion.A_raw.X = a.acceleration.x;
-  motion.A_raw.Y = a.acceleration.z;
-  motion.A_raw.Z = a.acceleration.y;
+  Motion.A_raw.X = a.acceleration.x;
+  Motion.A_raw.Y = a.acceleration.z;
+  Motion.A_raw.Z = a.acceleration.y;
   return true;
   #elif !defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && defined(ENABLE_VERTICAL_AXIS_Z)
-  motion.A_raw.X = a.acceleration.x;
-  motion.A_raw.Y = a.acceleration.y;
-  motion.A_raw.Z = a.acceleration.z;
+  Motion.A_raw.X = a.acceleration.x;
+  Motion.A_raw.Y = a.acceleration.y;
+  Motion.A_raw.Z = a.acceleration.z;
   return true;
   #else
   Serial.println("ERROR: VERTICAL AXIS NOT CONFIGURED");
@@ -61,7 +62,7 @@ bool Calibration()
     AttemptCounter ++;
     if(AttemptCounter > CONFIG_CAL_MAX_ATTEMPTS) return false;
 
-    IsMove = mpu.getMotionInterruptStatus();
+    IsMove = MPU.getMotionInterruptStatus();
     Serial.printf("Movimiento = %s\n",(IsMove ? "YES" : "NO") );
     if(IsMove) continue;
 
@@ -69,9 +70,9 @@ bool Calibration()
 
     if (Count > 0)
     {
-      bool XStable = abs(motion.A_raw.X - Last.X) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool YStable = abs(motion.A_raw.Y - Last.Y) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool ZStable = abs(motion.A_raw.Z - Last.Z) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool XStable = abs(Motion.A_raw.X - Last.X) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool YStable = abs(Motion.A_raw.Y - Last.Y) <= CONFIG_CALIBRATION_TOLERANCE;
+      bool ZStable = abs(Motion.A_raw.Z - Last.Z) <= CONFIG_CALIBRATION_TOLERANCE;
       if (!(XStable && YStable && ZStable))
       {
         delay(10);
@@ -79,20 +80,20 @@ bool Calibration()
       }
     }
 
-    Last.X = motion.A_raw.X;
-    Last.Y = motion.A_raw.Y;
-    Last.Z = motion.A_raw.Z;
+    Last.X = Motion.A_raw.X;
+    Last.Y = Motion.A_raw.Y;
+    Last.Z = Motion.A_raw.Z;
 
-    Sum.X += motion.A_raw.X;
-    Sum.Y += motion.A_raw.Y;
-    Sum.Z += motion.A_raw.Z;
+    Sum.X += Motion.A_raw.X;
+    Sum.Y += Motion.A_raw.Y;
+    Sum.Z += Motion.A_raw.Z;
 
-    Sum2.X += pow(motion.A_raw.X, 2);
-    Sum2.Y += pow(motion.A_raw.Y, 2);
-    Sum2.Z += pow(motion.A_raw.Z, 2);
+    Sum2.X += pow(Motion.A_raw.X, 2);
+    Sum2.Y += pow(Motion.A_raw.Y, 2);
+    Sum2.Z += pow(Motion.A_raw.Z, 2);
 
     #ifdef ENABLE_CALIBRATION_PRINT
-    Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", Count, motion.A_raw.X, motion.A_raw.Y, motion.A_raw.Z);
+    Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", Count, Motion.A_raw.X, Motion.A_raw.Y, Motion.A_raw.Z);
     #endif//ENABLE_CALIBRATION_PRINT
 
     Count++;
@@ -212,32 +213,32 @@ bool MotionInit()
     Serial.println("ERROR: Init wire Failed");
     return false;
   }
-  if( !mpu.begin() )
+  if( !MPU.begin() )
   {
     Serial.println("ERROR: Could not find MPU6050 chip");
     return false;
   }
   
-  mpu.setAccelerometerRange(CONFIG_ACCELEROMETER_RANGE);
-  mpu.setGyroRange(CONFIG_GYROSCOPE_RANGE);
-  mpu.setFilterBandwidth(CONFIG_DOWN_PASS_FILTER);
-  mpu.setHighPassFilter(CONFIG_HIGH_PASS_FILTER);
-  mpu.setSampleRateDivisor(CONFIG_SAMPLE_DIVISOR);
+  MPU.setAccelerometerRange(CONFIG_ACCELEROMETER_RANGE);
+  MPU.setGyroRange(CONFIG_GYROSCOPE_RANGE);
+  MPU.setFilterBandwidth(CONFIG_DOWN_PASS_FILTER);
+  MPU.setHighPassFilter(CONFIG_HIGH_PASS_FILTER);
+  MPU.setSampleRateDivisor(CONFIG_SAMPLE_DIVISOR);
 
   #if defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
-  mpu.setClock(MPU6050_PLL_GYROX);
+  MPU.setClock(MPU6050_PLL_GYROX);
   #elif !defined(ENABLE_VERTICAL_AXIS_X) && defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
-  mpu.setClock(MPU6050_PLL_GYROY);
+  MPU.setClock(MPU6050_PLL_GYROY);
   #elif !defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && defined(ENABLE_VERTICAL_AXIS_Z)
-  mpu.setClock(MPU6050_PLL_GYROZ);
+  MPU.setClock(MPU6050_PLL_GYROZ);
   #else
   Serial.println("ERROR: VERTICAL AXIS NOT CONFIGURED");
   return false;
   #endif
 
-  mpu.setMotionDetectionThreshold(CONFIG_MOTION_THRESHOLD);
-  mpu.setMotionDetectionDuration(CONFIG_MOTION_DURATION);
-  mpu.setMotionInterrupt(CONFIG_MOTION_INTERRUP);
+  MPU.setMotionDetectionThreshold(CONFIG_MOTION_THRESHOLD);
+  MPU.setMotionDetectionDuration(CONFIG_MOTION_DURATION);
+  MPU.setMotionInterrupt(CONFIG_MOTION_INTERRUP);
   delay(100);
 
   Calibration();
@@ -293,9 +294,10 @@ void MotionControl()
 
   // MOVE FLAG --------------------------------------------------
   
-  int weight = 0;
-  bool MotionInterrupt = mpu.getMotionInterruptStatus();
-  static bool LastMotionInterrupt;
+  //int weight = 0;
+  //bool MotionInterrupt = mpu.getMotionInterruptStatus();
+  //Serial.printf("MotionInterrupt = %s\n" , (MotionInterrupt ? "YEEEES" : "NO") );
+  /*static bool LastMotionInterrupt;
   //bool SpeedThreshold = (motion.Speed > CONFIG_SPEED_DETEC_MOVE ? true : false);
   //static bool LastSpeedThreshold;
   if (MotionInterrupt)      weight += 3;  // Mayor peso a la interrupción actual
@@ -316,7 +318,7 @@ void MotionControl()
   else counter_to_print++;
   LastMotionInterrupt = MotionInterrupt;
   //LastSpeedThreshold = SpeedThreshold;
- 
+ */
   // ACTIVE TIME --------------------------------------------------
   /*
   static float control_active_time = 0;

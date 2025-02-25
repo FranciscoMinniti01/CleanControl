@@ -8,7 +8,6 @@
 #include <Wire.h>
 #include <math.h>
 
-//#include "src/Tools/Storage.h"
 #include "src/Tools/TimerManager.h"
 
 // CONFIG ----------------------------------------------------------------------------------------------------
@@ -19,8 +18,9 @@
 
 //#define ENABLE_PRINT_MOTION_CONFIG
 #define ENABLE_PRINT_MOTION_INFO
+#define ENABLE_PRINT_CALIBRATION
+//#define ENABLE_MOTION_INTERRUPT
 //#define ENABLE_CALCULATE_AXES
-#define ENABLE_CALIBRATION_PRINT
 
 #define CONFIG_PIN_SDA                        21
 #define CONFIG_PIN_SCL                        20
@@ -36,14 +36,13 @@
 
 #define CONFIG_SPEED_DETEC_MOVE               0.1f
 #define CONFIG_MIN_DELTA_TIME                 1000
-#define CONFIG_NUM_SAMPLES                    5
 #define CONFIG_CALIBRATION_TOLERANCE          0.5f
 
 
 #define CONFIG_CAL_NUM_SAMPLES                10
 #define CONFIG_CAL_MAX_ATTEMPTS               30
 
-#define CONFIG_NUM_SAPLES                    10
+#define CONFIG_NUM_SAMPLES                    10
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -51,28 +50,25 @@
 #define KEY_DISTAN_T  "KDT"
 #define KEY_ACTIVE_T  "KAT"
 
+#define X 0
+#define Y 1
+#define Z 2
+
 // STRUCTURES - TYPEDEF ----------------------------------------------------------------------------------------------------
 
-typedef struct {
-  float   X;
-  float   Y;
-  float   Z;
-}cartesian_t;
+typedef float cartesian[3];
 
 typedef struct {
-  cartesian_t     Buffer[CONFIG_NUM_SAMPLES] = {0};  
-  cartesian_t     Sum   = {0,0,0};
+  cartesian       Buffer[CONFIG_NUM_SAMPLES] = {0};  
+  cartesian       Sum   = {0,0,0};
   uint8_t         Index = 0;
   uint8_t         Count = 0;
 } MovingAverage_t;
 
 typedef struct {
-  cartesian_t   A_raw;
-  cartesian_t   A_Correction;
-  
-  cartesian_t   A;
-  cartesian_t   S;
-  cartesian_t   D;
+  cartesian     A;
+  cartesian     S;
+  cartesian     D;
 
   float         Acceleration;
   float         Speed;
@@ -80,7 +76,7 @@ typedef struct {
 
   bool          IsMove;
   uint64_t      ActiveTime;
-}motion_info_t;
+}MotionInfo_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
