@@ -20,7 +20,7 @@
 #define ENABLE_PRINT_MOTION_INFO
 #define ENABLE_PRINT_CALIBRATION
 //#define ENABLE_MOTION_INTERRUPT
-//#define ENABLE_CALCULATE_AXES
+#define ENABLE_CALCULATE_AXES
 
 #define CONFIG_PIN_SDA                        21
 #define CONFIG_PIN_SCL                        20
@@ -33,16 +33,14 @@
 #define CONFIG_MOTION_THRESHOLD               1
 #define CONFIG_MOTION_DURATION                1
 
-
-#define CONFIG_SPEED_DETEC_MOVE               0.1f
-#define CONFIG_MIN_DELTA_TIME                 1000
-
-
 #define CONFIG_CAL_NUM_SAMPLES                10
 #define CONFIG_CAL_MAX_ATTEMPTS               30
 #define CONFIG_CAL_TOLERANCE                  0.5f
 
 #define CONFIG_NUM_SAMPLES                    10
+#define CONFIG_MIN_DELTA_TIME                 1000
+#define CONFIG_ACCELERATION_THRESHOLD         0.05f
+#define CONFIG_SPEED_THRESHOLD                0.05f
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -76,13 +74,13 @@ typedef struct {
 
   bool          IsMove;
   uint64_t      ActiveTime;
-}MotionInfo_t;
+} MotionInfo_t;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 bool MotionInit();
 void MotionControl();
-motion_info_t* get_motion_info();
+//motion_info_t* get_motion_info();
 
 // ----------------------------------------------------------------------------------------------------
 

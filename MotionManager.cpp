@@ -5,9 +5,10 @@
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 Adafruit_MPU6050        MPU;
-static motion_info_t    Motion;
+static MotionInfo_t     Motion;
 static uint64_t         DeltaTime;
-static MovingAverage_t  MovingAverage;
+static MovingAverage_t  AccelerationAverage;
+static bool testflag = false;
 
 static Cartesian        Correction;
 static Cartesian        RawAcceleration;
@@ -62,7 +63,9 @@ bool Calibration()
     if(AttemptCounter > CONFIG_CAL_MAX_ATTEMPTS) return false;
 
     bool IsMove = MPU.getMotionInterruptStatus();
+    #ifdef ENABLE_PRINT_CALIBRATION
     Serial.printf("Movimiento = %s\n",(IsMove ? "YES" : "NO") );
+    #endif//ENABLE_PRINT_CALIBRATION
     if(IsMove) continue;
 
     if(!ReadSensorInfo()) continue;
@@ -86,9 +89,9 @@ bool Calibration()
 
     for(int i = 0 ; i<3 ; i++) Sum2[i] += pow(RawAcceleration[i], 2);
 
-    #ifdef ENABLE_CALIBRATION_PRINT
+    #ifdef ENABLE_PRINT_CALIBRATION
     Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", Count, RawAcceleration[X], RawAcceleration[Y], RawAcceleration[Z]);
-    #endif//ENABLE_CALIBRATION_PRINT
+    #endif//ENABLE_PRINT_CALIBRATION
 
     Count++;
     AttemptCounter = 0;
@@ -101,7 +104,7 @@ bool Calibration()
   // Calcular desviación estándar
   for(int i = 0 ; i<3 ; i++)
   {
-    StdDev[i] = sqrt((Sum2[i] / CONFIG_CAL_NUM_SAMPLES) - pow(Correction[i], 2));
+    StdDev[i] = sqrt((Sum2[i] / CONFIG_CAL_NUM_SAMPLES) - pow(Correction[i], 2)); //Revisar
     if(StdDev[i] > CONFIG_CAL_TOLERANCE)
     {
       Serial.println("ERROR: High variability in calibration.");
@@ -109,40 +112,40 @@ bool Calibration()
     }
   }
 
-  #ifdef ENABLE_CALIBRATION_PRINT
-  Serial.println("Calibration Complete:");
+  #ifdef ENABLE_PRINT_CALIBRATION
+  Serial.printf ("\nCalibration Complete:\n");
   Serial.printf ("     Calibration Time = %.10f ms\n", get_delta_time_us(ControlFunTime)/1000.0 );
   Serial.printf ("     Correction Factor:      X=%f - Y=%f - Z=%f\n", Correction[X], Correction[Y], Correction[Z]);
   Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", RawAcceleration[X], RawAcceleration[Y], RawAcceleration[Z]);
   Serial.printf ("     Corrected Acceleration: X=%f - Y=%f - Z=%f\n", RawAcceleration[X]-Correction[X], RawAcceleration[Y]-Correction[Y], RawAcceleration[Z]-Correction[Z]);
-  #endif//ENABLE_CALIBRATION_PRINT
+  #endif//ENABLE_PRINT_CALIBRATION
 
   return true;
 }
 
-bool UpdateMovingAverage()
+bool UpdateAccelerationAverage()
 {
   if(!ReadSensorInfo()) return false;
 
   for(int i = 0 ; i<3 ; i++)
   {
-    MovingAverage.Sum[i] -= MovingAverage.Buffer[MovingAverage.Index][i];
-    MovingAverage.Buffer[MovingAverage.Index][i] = RawAcceleration[i] - Correction[i];
-    MovingAverage.Sum[i] += RawAcceleration[i] - Correction[i];
+    AccelerationAverage.Sum[i] -= AccelerationAverage.Buffer[AccelerationAverage.Index][i];
+    AccelerationAverage.Buffer[AccelerationAverage.Index][i] = RawAcceleration[i] - Correction[i];
+    AccelerationAverage.Sum[i] += RawAcceleration[i] - Correction[i];
   }
   
-  MovingAverage.Index = (MovingAverage.Index + 1) % CONFIG_NUM_SAMPLES;
-  MovingAverage.Count = min(MovingAverage.Count + 1, CONFIG_NUM_SAMPLES);
+  AccelerationAverage.Index = (AccelerationAverage.Index + 1) % CONFIG_NUM_SAMPLES;
+  AccelerationAverage.Count = min(AccelerationAverage.Count + 1, CONFIG_NUM_SAMPLES);
   
-  for(int i = 0 ; i<3 ; i++) Motion.A[i] = MovingAverage.Sum[i] / MovingAverage.Count
+  for(int i = 0 ; i<3 ; i++) Motion.A[i] = AccelerationAverage.Sum[i] / AccelerationAverage.Count;
 
   return true;
 }
 
-/*void PrintMotionConfig()
+void PrintMotionConfig()
 {
   #ifdef ENABLE_PRINT_MOTION_CONFIG
-  Serial.printf("MPU6050 Driver configuration:\n");
+  Serial.printf("\nMPU6050 Driver configuration:\n");
   Serial.printf("     Accelerometer Range:  %d\n"   , mpu.getAccelerometerRange() );
   Serial.printf("     Gyroscope Range:      %d\n"   , mpu.getGyroRange() );
   Serial.printf("     Filter BandWidth:     %d\n"   , mpu.getFilterBandwidth() );
@@ -150,41 +153,36 @@ bool UpdateMovingAverage()
   Serial.printf("     Sample Rate Divisor:  %d\n"   , mpu.getSampleRateDivisor() );
   Serial.printf("     Clock:                %d\n"   , mpu.getClock() );
   #endif//ENABLE_PRINT_MOTION_CONFIG
-}*/
+}
 
 void PrintMotionInfo()
 {
   #ifdef ENABLE_PRINT_MOTION_INFO
-  static uint16_t counter_to_print = 0;
-  if(counter_to_print > 250)
-  {
-    Serial.printf("\nMove info:\n");
-    
-    //Serial.printf("     Active Time  = %d s\n"    , motion.ActiveTime);
-    //Serial.printf("     Movimiento   = %s\n"      , (motion.IsMove ? "YES" : "NO") );
-    
-    Serial.printf("     AX = %f\n"                , motion.A.X);
-    Serial.printf("     AY = %f\n"                , motion.A.Y);
-    Serial.printf("     AZ = %f\n"                , motion.A.Z);
-    Serial.printf("     Acceleration = %f\n"      , motion.Acceleration);
+  Serial.printf("\nMotion Info:\n");
+  
+  //Serial.printf("     Active Time  = %d s\n"    , motion.ActiveTime);
+  //Serial.printf("     Movimiento   = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+  
+  Serial.printf("     AX = %f\n"                , Motion.A[X]);
+  Serial.printf("     AY = %f\n"                , Motion.A[Y]);
+  Serial.printf("     AZ = %f\n"                , Motion.A[Z]);
+  Serial.printf("     Acceleration = %f\n"      , Motion.Acceleration);
 
-    /*#ifdef ENABLE_CALCULATE_AXES
-    Serial.printf("     SX = %f\n"                , motion.S.X);
-    Serial.printf("     SY = %f\n"                , motion.S.Y);
-    Serial.printf("     SZ = %f\n"                , motion.S.Z);
-    #endif//ENABLE_CALCULATE_AXES
-    Serial.printf("     Speed = %f\n"             , motion.Speed);
+  Serial.printf("     %S\n",testflag?"entre":"no entre");
 
-    #ifdef ENABLE_CALCULATE_AXES
-    Serial.printf("     DX = %f\n"                , motion.D.X);
-    Serial.printf("     DY = %f\n"                , motion.D.Y);
-    Serial.printf("     DZ = %f\n"                , motion.D.Z);
-    #endif//ENABLE_CALCULATE_AXES
-    Serial.printf("     Distance = %f\n"          , motion.Distance);*/
+  #ifdef ENABLE_CALCULATE_AXES
+  Serial.printf("     SX = %f\n"                , Motion.S[X]);
+  Serial.printf("     SY = %f\n"                , Motion.S[Y]);
+  Serial.printf("     SZ = %f\n"                , Motion.S[Z]);
+  #endif//ENABLE_CALCULATE_AXES
+  Serial.printf("     Speed = %f\n"             , Motion.Speed);
 
-    counter_to_print = 0;
-  }
-  else counter_to_print++;
+  /*#ifdef ENABLE_CALCULATE_AXES
+  Serial.printf("     DX = %f\n"                , motion.D.X);
+  Serial.printf("     DY = %f\n"                , motion.D.Y);
+  Serial.printf("     DZ = %f\n"                , motion.D.Z);
+  #endif//ENABLE_CALCULATE_AXES
+  Serial.printf("     Distance = %f\n"          , motion.Distance);*/
   #endif//ENABLE_PRINT_MOTION_INFO
 }
 
@@ -227,9 +225,9 @@ bool MotionInit()
 
   Calibration();
 
-  //PrintMotionConfig();
+  PrintMotionConfig();
 
-  delta_time = get_time_us();
+  DeltaTime = get_time_us();
 
   return true;
 }
@@ -238,34 +236,39 @@ void MotionControl()
 {
   // ACCELERATION --------------------------------------------------
 
-  if(!UpdateMovingAverage()) return;
-  motion.Acceleration = sqrt(pow(motion.A.X, 2) + pow(motion.A.Y, 2) + pow(motion.A.Z, 2));*/
+  if(!UpdateAccelerationAverage()) return;
+  Motion.Acceleration = sqrt(pow(Motion.A[X], 2) + pow(Motion.A[Y], 2) + pow(Motion.A[Z], 2));
 
   // DELTA TIME --------------------------------------------------
 
-  /*float DT = get_delta_time_us(delta_time);
+  float DT = get_delta_time_us(DeltaTime);
   if(DT < CONFIG_MIN_DELTA_TIME) return;
   DT /= 1000000.0;
-  delta_time = get_time_us();*/
+  DeltaTime = get_time_us();
 
   // SPEED --------------------------------------------------
-  /*if(abs(motion.Acceleration) > 0.1f)
+  if(abs(Motion.Acceleration) > CONFIG_ACCELERATION_THRESHOLD)
   {
+    testflag = true;
     float alpha = 0.7;
     static float lastSpeed = 0.0;
+
     #ifdef ENABLE_CALCULATE_AXES
-    motion.S.X = motion.A.X * DT;
-    motion.S.Y = motion.A.Y * DT;
-    motion.S.Z = motion.A.Z * DT;
+    Motion.S[X] = Motion.A[X] * DT;
+    Motion.S[Y] = Motion.A[Y] * DT;
+    Motion.S[Z] = Motion.A[Z] * DT;
     #endif//ENABLE_CALCULATE_AXES
 
-    motion.Speed = alpha * (motion.Speed + motion.Acceleration * DT) + (1 - alpha) * lastSpeed;
-    lastSpeed = motion.Speed;
+    Motion.Speed = alpha * (Motion.Speed + Motion.Acceleration * DT) + (1 - alpha) * lastSpeed;
+    lastSpeed = Motion.Speed;
   }
-  else motion.Speed *= 0.98;
+  else{
+    Motion.Speed *= 0.98;
+    testflag = false;
+  }
 
   // DISTANCE --------------------------------------------------
-  if(abs(motion.Speed) > 0.05f)
+  /*if(abs(motion.Speed) > CONFIG_SPEED_THRESHOLD)
   {
     #ifdef ENABLE_CALCULATE_AXES
     motion.D.X = motion.S.X * DT;
@@ -317,7 +320,13 @@ void MotionControl()
 
   //if(counter_to_print > 500) Serial.printf("Function time control = %.10f s\n" , get_delta_time_us(control_fun_time)/1000000.0 );
 
-  //PrintMotionInfo();
+  static uint8_t count = 0;
+  if(count++ > 250)
+  {
+    PrintMotionInfo();
+    count = 0;
+  }
+  
 }
 
 /*motion_info_t* get_motion_info()

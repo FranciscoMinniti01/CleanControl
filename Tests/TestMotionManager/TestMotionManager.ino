@@ -12,7 +12,7 @@
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("\n\n\n\n\n\n\n\n\n\n---------- MPU6050 TEST MAIN ----------");
+  Serial.println("\n\n\n\n\n\n---------- MPU6050 TEST MAIN ----------\n");
 
   timer_init();
   MotionInit();
