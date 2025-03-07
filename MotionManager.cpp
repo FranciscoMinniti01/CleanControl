@@ -8,7 +8,9 @@ Adafruit_MPU6050        MPU;
 static motion_info_t    Motion;
 static uint64_t         DeltaTime;
 static MovingAverage_t  MovingAverage;
-static cartesian        Correction;
+
+static Cartesian        Correction;
+static Cartesian        RawAcceleration;
 
 // PRIVATE FUNCTIONS ----------------------------------------------------------------------------------------------------
 
@@ -20,21 +22,21 @@ bool ReadSensorInfo()
     Serial.println("ERROR: MPU6050 sensor reading failed.");
     return false;
   }
-  
+
   #if defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
-  Motion.A_raw.X = a.acceleration.z;
-  Motion.A_raw.Y = a.acceleration.y;
-  Motion.A_raw.Z = a.acceleration.x;
+  RawAcceleration[X] = a.acceleration.z;
+  RawAcceleration[Y] = a.acceleration.y;
+  RawAcceleration[Z] = a.acceleration.x;
   return true;
   #elif !defined(ENABLE_VERTICAL_AXIS_X) && defined(ENABLE_VERTICAL_AXIS_Y) && !defined(ENABLE_VERTICAL_AXIS_Z)
-  Motion.A_raw.X = a.acceleration.x;
-  Motion.A_raw.Y = a.acceleration.z;
-  Motion.A_raw.Z = a.acceleration.y;
+  RawAcceleration[X] = a.acceleration.x;
+  RawAcceleration[Y] = a.acceleration.z;
+  RawAcceleration[Z] = a.acceleration.y;
   return true;
   #elif !defined(ENABLE_VERTICAL_AXIS_X) && !defined(ENABLE_VERTICAL_AXIS_Y) && defined(ENABLE_VERTICAL_AXIS_Z)
-  Motion.A_raw.X = a.acceleration.x;
-  Motion.A_raw.Y = a.acceleration.y;
-  Motion.A_raw.Z = a.acceleration.z;
+  RawAcceleration[X] = a.acceleration.x;
+  RawAcceleration[Y] = a.acceleration.y;
+  RawAcceleration[Z] = a.acceleration.z;
   return true;
   #else
   Serial.println("ERROR: VERTICAL AXIS NOT CONFIGURED");
@@ -47,13 +49,10 @@ bool Calibration()
   int Count = 0;
   int AttemptCounter = 0;
 
-  cartesian_t Sum = {0,0,0};
-  cartesian_t Sum2 = {0,0,0};
-  cartesian_t StdDev = {0,0,0};
-
-  cartesian_t Last = {0,0,0};
-
-  bool IsMove; 
+  Cartesian Sum = {0,0,0};
+  Cartesian Sum2 = {0,0,0};
+  Cartesian StdDev = {0,0,0};
+  Cartesian Last = {0,0,0};
 
   uint64_t ControlFunTime = get_time_us();
 
@@ -62,7 +61,7 @@ bool Calibration()
     AttemptCounter ++;
     if(AttemptCounter > CONFIG_CAL_MAX_ATTEMPTS) return false;
 
-    IsMove = MPU.getMotionInterruptStatus();
+    bool IsMove = MPU.getMotionInterruptStatus();
     Serial.printf("Movimiento = %s\n",(IsMove ? "YES" : "NO") );
     if(IsMove) continue;
 
@@ -70,30 +69,25 @@ bool Calibration()
 
     if (Count > 0)
     {
-      bool XStable = abs(Motion.A_raw.X - Last.X) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool YStable = abs(Motion.A_raw.Y - Last.Y) <= CONFIG_CALIBRATION_TOLERANCE;
-      bool ZStable = abs(Motion.A_raw.Z - Last.Z) <= CONFIG_CALIBRATION_TOLERANCE;
-      if (!(XStable && YStable && ZStable))
+      for(int i = 0 ; i<3 ; i++)
       {
-        delay(10);
-        continue;
+        bool Stable = abs(RawAcceleration[i] - Last[i]) <= CONFIG_CAL_TOLERANCE;
+        if(!Stable)
+        {
+          delay(10);
+          continue;
+        }
       }
     }
 
-    Last.X = Motion.A_raw.X;
-    Last.Y = Motion.A_raw.Y;
-    Last.Z = Motion.A_raw.Z;
+    for(int i = 0 ; i<3 ; i++) Last[i] = RawAcceleration[i];
 
-    Sum.X += Motion.A_raw.X;
-    Sum.Y += Motion.A_raw.Y;
-    Sum.Z += Motion.A_raw.Z;
+    for(int i = 0 ; i<3 ; i++) Sum[i] += RawAcceleration[i];
 
-    Sum2.X += pow(Motion.A_raw.X, 2);
-    Sum2.Y += pow(Motion.A_raw.Y, 2);
-    Sum2.Z += pow(Motion.A_raw.Z, 2);
+    for(int i = 0 ; i<3 ; i++) Sum2[i] += pow(RawAcceleration[i], 2);
 
     #ifdef ENABLE_CALIBRATION_PRINT
-    Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", Count, Motion.A_raw.X, Motion.A_raw.Y, Motion.A_raw.Z);
+    Serial.printf ("Calibration Aceleration(%d): X=%f - Y=%f - Z=%f\n", Count, RawAcceleration[X], RawAcceleration[Y], RawAcceleration[Z]);
     #endif//ENABLE_CALIBRATION_PRINT
 
     Count++;
@@ -102,58 +96,48 @@ bool Calibration()
     delay(10);
   }
 
-  motion.A_Correction.X = Sum.X / CONFIG_CAL_NUM_SAMPLES;
-  motion.A_Correction.Y = Sum.Y / CONFIG_CAL_NUM_SAMPLES;
-  motion.A_Correction.Z = Sum.Z / CONFIG_CAL_NUM_SAMPLES;
+  for(int i = 0 ; i<3 ; i++) Correction[i] = Sum[i] / CONFIG_CAL_NUM_SAMPLES;
 
   // Calcular desviación estándar
-  StdDev.X = sqrt((Sum2.X / CONFIG_CAL_NUM_SAMPLES) - pow(motion.A_Correction.X, 2));
-  StdDev.Y = sqrt((Sum2.Y / CONFIG_CAL_NUM_SAMPLES) - pow(motion.A_Correction.Y, 2));
-  StdDev.Z = sqrt((Sum2.Z / CONFIG_CAL_NUM_SAMPLES) - pow(motion.A_Correction.Z, 2));
-
-  // Verificar si la calibración es válida
-  if (StdDev.X > CONFIG_CALIBRATION_TOLERANCE || StdDev.Y > CONFIG_CALIBRATION_TOLERANCE || StdDev.Z > CONFIG_CALIBRATION_TOLERANCE)
+  for(int i = 0 ; i<3 ; i++)
   {
-    Serial.println("ERROR: High variability in calibration.");
-    return false;
+    StdDev[i] = sqrt((Sum2[i] / CONFIG_CAL_NUM_SAMPLES) - pow(Correction[i], 2));
+    if(StdDev[i] > CONFIG_CAL_TOLERANCE)
+    {
+      Serial.println("ERROR: High variability in calibration.");
+      return false;
+    }
   }
 
   #ifdef ENABLE_CALIBRATION_PRINT
   Serial.println("Calibration Complete:");
   Serial.printf ("     Calibration Time = %.10f ms\n", get_delta_time_us(ControlFunTime)/1000.0 );
-  Serial.printf ("     Correction Factor:      X=%f - Y=%f - Z=%f\n", motion.A_Correction.X, motion.A_Correction.Y, motion.A_Correction.Z);
-  Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", motion.A_raw.X, motion.A_raw.Y, motion.A_raw.Z);
-  Serial.printf ("     Corrected Acceleration: X=%f - Y=%f - Z=%f\n", motion.A_raw.X-motion.A_Correction.X, motion.A_raw.Y-motion.A_Correction.Y, motion.A_raw.Z-motion.A_Correction.Z);
+  Serial.printf ("     Correction Factor:      X=%f - Y=%f - Z=%f\n", Correction[X], Correction[Y], Correction[Z]);
+  Serial.printf ("     Aceleration Raw:        X=%f - Y=%f - Z=%f\n", RawAcceleration[X], RawAcceleration[Y], RawAcceleration[Z]);
+  Serial.printf ("     Corrected Acceleration: X=%f - Y=%f - Z=%f\n", RawAcceleration[X]-Correction[X], RawAcceleration[Y]-Correction[Y], RawAcceleration[Z]-Correction[Z]);
   #endif//ENABLE_CALIBRATION_PRINT
 
   return true;
 }
 
-/*bool UpdateMovingAverage()
+bool UpdateMovingAverage()
 {
   if(!ReadSensorInfo()) return false;
 
-  MovingAverage.Sum.X -= MovingAverage.Buffer[MovingAverage.Index].X;
-  MovingAverage.Buffer[MovingAverage.Index].X = motion.A_raw.X - motion.A_Correction.X;
-  MovingAverage.Sum.X += motion.A_raw.X - motion.A_Correction.X;
-
-  MovingAverage.Sum.Y -= MovingAverage.Buffer[MovingAverage.Index].Y;
-  MovingAverage.Buffer[MovingAverage.Index].Y = motion.A_raw.Y - motion.A_Correction.Y;
-  MovingAverage.Sum.Y += motion.A_raw.Y - motion.A_Correction.Y;
-
-  MovingAverage.Sum.Z -= MovingAverage.Buffer[MovingAverage.Index].Z;
-  MovingAverage.Buffer[MovingAverage.Index].Z = motion.A_raw.Z - motion.A_Correction.Z;
-  MovingAverage.Sum.Z += motion.A_raw.Z - motion.A_Correction.Z;
+  for(int i = 0 ; i<3 ; i++)
+  {
+    MovingAverage.Sum[i] -= MovingAverage.Buffer[MovingAverage.Index][i];
+    MovingAverage.Buffer[MovingAverage.Index][i] = RawAcceleration[i] - Correction[i];
+    MovingAverage.Sum[i] += RawAcceleration[i] - Correction[i];
+  }
   
   MovingAverage.Index = (MovingAverage.Index + 1) % CONFIG_NUM_SAMPLES;
   MovingAverage.Count = min(MovingAverage.Count + 1, CONFIG_NUM_SAMPLES);
   
-  motion.A.X = MovingAverage.Sum.X / MovingAverage.Count;
-  motion.A.Y = MovingAverage.Sum.Y / MovingAverage.Count;
-  motion.A.Z = MovingAverage.Sum.Z / MovingAverage.Count;
+  for(int i = 0 ; i<3 ; i++) Motion.A[i] = MovingAverage.Sum[i] / MovingAverage.Count
 
   return true;
-}*/
+}
 
 /*void PrintMotionConfig()
 {
@@ -254,7 +238,7 @@ void MotionControl()
 {
   // ACCELERATION --------------------------------------------------
 
-  /*if(!UpdateMovingAverage()) return;
+  if(!UpdateMovingAverage()) return;
   motion.Acceleration = sqrt(pow(motion.A.X, 2) + pow(motion.A.Y, 2) + pow(motion.A.Z, 2));*/
 
   // DELTA TIME --------------------------------------------------

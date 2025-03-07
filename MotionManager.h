@@ -36,11 +36,11 @@
 
 #define CONFIG_SPEED_DETEC_MOVE               0.1f
 #define CONFIG_MIN_DELTA_TIME                 1000
-#define CONFIG_CALIBRATION_TOLERANCE          0.5f
 
 
 #define CONFIG_CAL_NUM_SAMPLES                10
 #define CONFIG_CAL_MAX_ATTEMPTS               30
+#define CONFIG_CAL_TOLERANCE                  0.5f
 
 #define CONFIG_NUM_SAMPLES                    10
 
@@ -56,19 +56,19 @@
 
 // STRUCTURES - TYPEDEF ----------------------------------------------------------------------------------------------------
 
-typedef float cartesian[3];
+typedef float Cartesian[3];
 
 typedef struct {
-  cartesian       Buffer[CONFIG_NUM_SAMPLES] = {0};  
-  cartesian       Sum   = {0,0,0};
+  Cartesian       Buffer[CONFIG_NUM_SAMPLES] = {0};  
+  Cartesian       Sum   = {0,0,0};
   uint8_t         Index = 0;
   uint8_t         Count = 0;
 } MovingAverage_t;
 
 typedef struct {
-  cartesian     A;
-  cartesian     S;
-  cartesian     D;
+  Cartesian     A;
+  Cartesian     S;
+  Cartesian     D;
 
   float         Acceleration;
   float         Speed;
