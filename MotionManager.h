@@ -40,7 +40,7 @@
 #define CONFIG_NUM_SAMPLES                    10
 #define CONFIG_MIN_DELTA_TIME                 1000
 #define CONFIG_ACCELERATION_THRESHOLD         0.05f
-#define CONFIG_SPEED_THRESHOLD                0.05f
+#define CONFIG_SPEED_THRESHOLD                0.15f
 
 // DEFINES ----------------------------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ typedef struct {
   Cartesian       Sum   = {0,0,0};
   uint8_t         Index = 0;
   uint8_t         Count = 0;
-} MovingAverage_t;
+} CartesianAverage_t;
 
 typedef struct {
   Cartesian     A;

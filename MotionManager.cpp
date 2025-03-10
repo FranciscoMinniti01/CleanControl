@@ -4,10 +4,10 @@
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-Adafruit_MPU6050        MPU;
-static MotionInfo_t     Motion;
-static uint64_t         DeltaTime;
-static MovingAverage_t  AccelerationAverage;
+Adafruit_MPU6050            MPU;
+static MotionInfo_t         Motion;
+static uint64_t             DeltaTime;
+static CartesianAverage_t   AccelerationAverage;
 static bool testflag = false;
 
 static Cartesian        Correction;
@@ -160,8 +160,8 @@ void PrintMotionInfo()
   #ifdef ENABLE_PRINT_MOTION_INFO
   Serial.printf("\nMotion Info:\n");
   
-  //Serial.printf("     Active Time  = %d s\n"    , motion.ActiveTime);
-  //Serial.printf("     Movimiento   = %s\n"      , (motion.IsMove ? "YES" : "NO") );
+  Serial.printf("     Active Time  = %d s\n"    , Motion.ActiveTime);
+  Serial.printf("     Movimiento   = %s\n"      , (Motion.IsMove ? "YES" : "NO") );
   
   Serial.printf("     AX = %f\n"                , Motion.A[X]);
   Serial.printf("     AY = %f\n"                , Motion.A[Y]);
@@ -177,12 +177,12 @@ void PrintMotionInfo()
   #endif//ENABLE_CALCULATE_AXES
   Serial.printf("     Speed = %f\n"             , Motion.Speed);
 
-  /*#ifdef ENABLE_CALCULATE_AXES
-  Serial.printf("     DX = %f\n"                , motion.D.X);
-  Serial.printf("     DY = %f\n"                , motion.D.Y);
-  Serial.printf("     DZ = %f\n"                , motion.D.Z);
+  #ifdef ENABLE_CALCULATE_AXES
+  Serial.printf("     DX = %f\n"                , Motion.D[X]);
+  Serial.printf("     DY = %f\n"                , Motion.D[Y]);
+  Serial.printf("     DZ = %f\n"                , Motion.D[Z]);
   #endif//ENABLE_CALCULATE_AXES
-  Serial.printf("     Distance = %f\n"          , motion.Distance);*/
+  Serial.printf("     Distance = %f\n"          , Motion.Distance);
   #endif//ENABLE_PRINT_MOTION_INFO
 }
 
@@ -235,12 +235,10 @@ bool MotionInit()
 void MotionControl()
 {
   // ACCELERATION --------------------------------------------------
-
   if(!UpdateAccelerationAverage()) return;
   Motion.Acceleration = sqrt(pow(Motion.A[X], 2) + pow(Motion.A[Y], 2) + pow(Motion.A[Z], 2));
 
   // DELTA TIME --------------------------------------------------
-
   float DT = get_delta_time_us(DeltaTime);
   if(DT < CONFIG_MIN_DELTA_TIME) return;
   DT /= 1000000.0;
@@ -268,31 +266,29 @@ void MotionControl()
   }
 
   // DISTANCE --------------------------------------------------
-  /*if(abs(motion.Speed) > CONFIG_SPEED_THRESHOLD)
+  if(abs(Motion.Speed) > CONFIG_SPEED_THRESHOLD)
   {
     #ifdef ENABLE_CALCULATE_AXES
-    motion.D.X = motion.S.X * DT;
-    motion.D.Y = motion.S.Y * DT;
-    motion.D.Z = motion.S.Z * DT;
+    Motion.D[X] += Motion.S[X] * DT;
+    Motion.D[Y] += Motion.S[Y] * DT;
+    Motion.D[Z] += Motion.S[Z] * DT;
     #endif//ENABLE_CALCULATE_AXES
 
-    motion.Distance += motion.Speed * DT;
-  }*/
+    Motion.Distance += Motion.Speed * DT;
+  }
 
   // MOVE FLAG --------------------------------------------------
-  
-  //int weight = 0;
-  //bool MotionInterrupt = mpu.getMotionInterruptStatus();
-  //Serial.printf("MotionInterrupt = %s\n" , (MotionInterrupt ? "YEEEES" : "NO") );
-  /*static bool LastMotionInterrupt;
-  //bool SpeedThreshold = (motion.Speed > CONFIG_SPEED_DETEC_MOVE ? true : false);
-  //static bool LastSpeedThreshold;
+  int weight = 0;
+  bool MotionInterrupt = MPU.getMotionInterruptStatus();
+  static bool LastMotionInterrupt;
+  bool SpeedThreshold = ( (abs(Motion.Speed) > CONFIG_SPEED_THRESHOLD) ? true : false);
+  static bool LastSpeedThreshold;
   if (MotionInterrupt)      weight += 3;  // Mayor peso a la interrupción actual
   if (LastMotionInterrupt)  weight += 1;
-  //if (SpeedThreshold)       weight += 3;  // Mayor peso a la velocidad actual
-  //if (LastSpeedThreshold)   weight += 1;
-  motion.IsMove = (weight >= 4);
-  static uint16_t counter_to_print = 0;
+  if (SpeedThreshold)       weight += 3;  // Mayor peso a la velocidad actual
+  if (LastSpeedThreshold)   weight += 1;
+  Motion.IsMove = (weight >= 4);
+  /*static uint16_t counter_to_print = 0;
   if(counter_to_print > 250)
   {
     Serial.printf("\n     Movimiento          = %s\n"      , (motion.IsMove ? "YES" : "NO") );
@@ -302,20 +298,19 @@ void MotionControl()
     //Serial.printf("     LastSpeedThreshold  = %s\n"      , (LastSpeedThreshold ? "YES" : "NO") );
     counter_to_print = 0;
   }
-  else counter_to_print++;
+  else counter_to_print++;*/
   LastMotionInterrupt = MotionInterrupt;
-  //LastSpeedThreshold = SpeedThreshold;
- */
+  LastSpeedThreshold = SpeedThreshold;
+
   // ACTIVE TIME --------------------------------------------------
-  /*
   static float control_active_time = 0;
-  if(motion.IsMove) control_active_time += DT;
+  if(Motion.IsMove) control_active_time += DT;
   if(control_active_time >= 1)
   {
-    motion.ActiveTime += (uint64_t)control_active_time;
+    Motion.ActiveTime += (uint64_t)control_active_time;
     control_active_time = 0;
   }
-  */
+
   // --------------------------------------------------
 
   //if(counter_to_print > 500) Serial.printf("Function time control = %.10f s\n" , get_delta_time_us(control_fun_time)/1000000.0 );
