@@ -26,9 +26,9 @@
 #define CONFIG_PIN_SCL                        20
 #define CONFIG_ACCELEROMETER_RANGE            MPU6050_RANGE_2_G         // MPU6050_RANGE_2_G o MPU6050_RANGE_4_G 
 #define CONFIG_GYROSCOPE_RANGE                MPU6050_RANGE_250_DEG     // MPU6050_RANGE_250_DEG o MPU6050_RANGE_500_DEG 
-#define CONFIG_DOWN_PASS_FILTER               MPU6050_BAND_260_HZ       // MPU6050_BAND_184_HZ o MPU6050_BAND_260_HZ
+#define CONFIG_DOWN_PASS_FILTER               MPU6050_BAND_10_HZ       // MPU6050_BAND_184_HZ o MPU6050_BAND_260_HZ
 #define CONFIG_HIGH_PASS_FILTER               MPU6050_HIGHPASS_DISABLE  // MPU6050_HIGHPASS_DISABLE o MPU6050_HIGHPASS_5_HZ
-#define CONFIG_SAMPLE_DIVISOR                 0
+#define CONFIG_SAMPLE_DIVISOR                 4
 #define CONFIG_MOTION_INTERRUP                true
 #define CONFIG_MOTION_THRESHOLD               1
 #define CONFIG_MOTION_DURATION                1
@@ -37,9 +37,9 @@
 #define CONFIG_CAL_MAX_ATTEMPTS               30
 #define CONFIG_CAL_TOLERANCE                  0.5f
 
-#define CONFIG_NUM_SAMPLES                    10
+#define CONFIG_NUM_SAMPLES                    20
 #define CONFIG_MIN_DELTA_TIME                 1000
-#define CONFIG_ACCELERATION_THRESHOLD         0.05f
+#define CONFIG_ACCELERATION_THRESHOLD         0.5f
 #define CONFIG_SPEED_THRESHOLD                0.15f
 
 // DEFINES ----------------------------------------------------------------------------------------------------

@@ -316,7 +316,7 @@ void MotionControl()
   //if(counter_to_print > 500) Serial.printf("Function time control = %.10f s\n" , get_delta_time_us(control_fun_time)/1000000.0 );
 
   static uint8_t count = 0;
-  if(count++ > 250)
+  if(count++ > 100)
   {
     PrintMotionInfo();
     count = 0;
