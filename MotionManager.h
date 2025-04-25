@@ -19,7 +19,6 @@
 //#define ENABLE_PRINT_MOTION_CONFIG
 #define ENABLE_PRINT_MOTION_INFO
 #define ENABLE_PRINT_CALIBRATION
-//#define ENABLE_MOTION_INTERRUPT
 #define ENABLE_CALCULATE_AXES
 
 #define CONFIG_PIN_SDA                        21
@@ -80,7 +79,7 @@ typedef struct {
 
 bool MotionInit();
 void MotionControl();
-//motion_info_t* get_motion_info();
+MotionInfo_t* GetMotionInfo();
 
 // ----------------------------------------------------------------------------------------------------
 

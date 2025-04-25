@@ -54,7 +54,6 @@ bool register_credentials()
       if(!wifiMulti.addAP(credentials[i].ssid,credentials[i].password))
       {
         Serial.printf("ERROR: add credential %d failed\n",i);
-        //has_wifi_error = true;
       }
       else flag = true;
     }
@@ -141,141 +140,97 @@ void WiFiEvent(WiFiEvent_t event)
   {
  // GENERAL ----------------------------------------------------------------------------------------------------
     case ARDUINO_EVENT_WIFI_READY:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: Wifi suport ready");    
-      #endif
       break;
 
     default: 
-      #ifdef DEBUG_WIFI
       Serial.printf("EVENT: %d\n",event);    
-      #endif  
       break;
       
  // STATION MODE ----------------------------------------------------------------------------------------------------
     case ARDUINO_EVENT_WIFI_SCAN_DONE:
-      #ifdef DEBUG_WIFI
       //Serial.println("EVENT: STA Completed scan");    
-      #endif
       break;
     
     case ARDUINO_EVENT_WIFI_STA_START:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: STA started");    
-      #endif
       break;
     
     case ARDUINO_EVENT_WIFI_STA_STOP:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: STA stopped");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_STA_CONNECTED:
-      #ifdef DEBUG_WIFI
-      Serial.println("EVENT: STA Connected");    
-      #endif
+      Serial.println("EVENT: STA Connected");
       break;
 
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: STA Disconnected");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: STA authentication mode changed");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-      #ifdef DEBUG_WIFI
       Serial.print("EVENT: STA Obtained IP: ");
       Serial.println(WiFi.localIP());
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_STA_LOST_IP:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: STA Lost IP");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: STA IPv6 is preferred");    
-      #endif
       break;
 
  // WIFI PROTECTED SETUP (WPS) ENROLLE MODE ----------------------------------------------------------------------------------------------------
       
     case ARDUINO_EVENT_WPS_ER_SUCCESS:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: WPS succeeded");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WPS_ER_FAILED:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: WPS failed");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WPS_ER_TIMEOUT:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: WPS timeout");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WPS_ER_PIN:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: WPS pin code");    
-      #endif
       break;
 
  // ACCES POINT MODE ----------------------------------------------------------------------------------------------------
       
     case ARDUINO_EVENT_WIFI_AP_START:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: AP started");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_AP_STOP:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: AP stopped");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: AP Client connected");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: AP Client disconnected");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: AP Assigned IP to client");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_AP_PROBEREQRECVED:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: AP Received request");    
-      #endif
       break;
 
     case ARDUINO_EVENT_WIFI_AP_GOT_IP6:
-      #ifdef DEBUG_WIFI
       Serial.println("EVENT: AP IPv6 is preferred");    
-      #endif
       break;
   }
 }

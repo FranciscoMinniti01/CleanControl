@@ -324,9 +324,9 @@ void MotionControl()
   
 }
 
-/*motion_info_t* get_motion_info()
+MotionInfo_t* GetMotionInfo()
 {
-  return &motion;
-}*/
+  return &Motion;
+}
 
 // ----------------------------------------------------------------------------------------------------
