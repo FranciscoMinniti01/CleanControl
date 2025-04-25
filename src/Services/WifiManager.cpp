@@ -1,6 +1,6 @@
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
-#include "wifi_manager.h"
+#include "WifiManager.h"
 
 // VARIABLES SERVER ----------------------------------------------------------------------------------------------------
 
@@ -67,18 +67,18 @@ void get_storage_credentials()
   Serial.printf("DEBUG: get_storage_credentials()\n");
   for(uint8_t i = 0; i<MAX_CREDENCIALES; i++)
   {
-    set_data_storage( &(credentials_storage[i][INDEX_SSID]), 
+    set_storage( &(credentials_storage[i][INDEX_SSID]), 
                       (void*)credentials[i].ssid,
                       MAX_LEN_CREDENCIALES,
                       KEY_CREDENTIAL_SSID + String(i) );
 
-    set_data_storage( &(credentials_storage[i][INDEX_PASSWORD]), 
+    set_storage( &(credentials_storage[i][INDEX_PASSWORD]), 
                       (void*)credentials[i].password,
                       MAX_LEN_CREDENCIALES,
                       KEY_CREDENTIAL_PASSWORD + String(i) );
 
-    get_data(&credentials_storage[i][INDEX_SSID]);
-    get_data(&credentials_storage[i][INDEX_PASSWORD]);
+    get_storage(&credentials_storage[i][INDEX_SSID]);
+    get_storage(&credentials_storage[i][INDEX_PASSWORD]);
     
     if(credentials[i].ssid[0] != 0)
     {
@@ -111,12 +111,12 @@ bool set_credentials(String ssid, String password)
   strncpy(credentials[index].password, password.c_str(), MAX_LEN_CREDENCIALES);
   credentials[index].password[MAX_LEN_CREDENCIALES-1] = '\0';
 
-  if(!seve_data(&credentials_storage[index][INDEX_SSID]))
+  if(!save_storage(&credentials_storage[index][INDEX_SSID]))
   {
     Serial.printf("ERROR: can not seve ssid\n"); 
     return false;
   }
-  if(!seve_data(&credentials_storage[index][INDEX_PASSWORD]))
+  if(!save_storage(&credentials_storage[index][INDEX_PASSWORD]))
   {
     Serial.printf("ERROR: can not seve password\n"); 
     return false;
