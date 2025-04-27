@@ -1,6 +1,7 @@
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
+// DESCRIPTION ----------------------------------------------------------------------------------------
 /*
   Modulo:
     El modulo permite mantener una coneccion STA wifi con las credenciales que se le cargen a la vez que permite activar un servidor y mostrar las rootas configuradas
@@ -21,7 +22,8 @@
       Esto se va a poder hacer desde server manager conciderando el return de la funcion set_credentials en wifi manager
 */
 
-// INCLUDES ----------------------------------------------------------------------------------------------------
+
+// INCLUDES -------------------------------------------------------------------------------------------
 
 #include <string>
 #include "Print.h"
@@ -32,13 +34,10 @@
 #include <WebServer.h>
 
 #include "../../src/Tools/Storage.h"
+#include "../../src/Tools/TimerManager.h"
 
-// CREDENTIALS CONFIG ----------------------------------------------------------------------------------------------------
 
-#define MAX_CREDENCIALES      3   // Maximo numero de credenciales wifi que se pueden almacenar en el dispositivo
-#define MAX_LEN_CREDENCIALES  30  // Largo maximo de las credenciales wifi que se pueden almacenar en el dispositivo
-
-// ACCESS POINT CONFIG ----------------------------------------------------------------------------------------------------
+// ACCESS POINT ---------------------------------------------------------------------------------------
 
 #define SSID_AP               "CleanControlAP"
 #define PASSWORD_AP           "12345678"
@@ -64,11 +63,8 @@
 #define SUBNET_IP_3           255
 #define SUBNET_IP_4           0
 
-// STATIC CONFIG ----------------------------------------------------------------------------------------------------
 
-
-
-// VARIABLES SERVER ----------------------------------------------------------------------------------------------------
+// SERVER ---------------------------------------------------------------------------------------------
 
 typedef void(*handle_fun)();
 
@@ -78,7 +74,25 @@ typedef struct {
     handle_fun  fun;
 } hdmi_root_t;
 
-// VARIABLES WIFI ----------------------------------------------------------------------------------------------------
+
+// CREDENTIALS ----------------------------------------------------------------------------------------
+
+#define MAX_CREDENCIALES      3   // Maximo numero de credenciales wifi que se pueden almacenar en el dispositivo
+#define MAX_LEN_CREDENCIALES  30  // Largo maximo de las credenciales wifi que se pueden almacenar en el dispositivo
+
+#define KEY_CREDENTIAL_PASSWORD "CP"
+#define KEY_CREDENTIAL_SSID     "CS"
+
+#define INDEX_SSID              0
+#define INDEX_PASSWORD          1
+
+typedef struct {
+  char   ssid[MAX_LEN_CREDENCIALES+1];
+  char   password[MAX_LEN_CREDENCIALES+1];
+} credentials_t;
+
+
+// STRUCTS TYPEDEFS DEFINES ---------------------------------------------------------------------------
 
 enum State_Wifi_t
 {
@@ -101,53 +115,26 @@ enum State_STA_t
   WIFI_STA_DEINIT
 };
 
-// VARIABLES CREDENTIALS ----------------------------------------------------------------------------------------------------
 
-#define KEY_CREDENTIAL_PASSWORD "CP"
-#define KEY_CREDENTIAL_SSID     "CS"
+// PUBLIC FUNCTIONS ----------------------------------------------------------------------------------- 
 
-#define INDEX_SSID              0
-#define INDEX_PASSWORD          1
+void SetHdmiRoot(String root_ , HTTPMethod request_ , handle_fun fun_);
 
-typedef struct {
-  char   ssid[MAX_LEN_CREDENCIALES];
-  char   password[MAX_LEN_CREDENCIALES];
-} credentials_t;
+bool SetCredentials(String ssid, String password);
 
-// PRIVATE FUNCTIONS ---------------------------------------------------------------------------------------------------- 
+void WifiManager();
 
-void get_storage_credentials();
+credentials_t* GetCredentials();
 
-void WiFi_manager();
+float GetRssi();
 
-void WiFi_stateMachine();
+bool GetWifiStatus();
 
-void AP_stateMachine();
+bool IsWifiError();
 
-void STA_stateMachine();
+String GetSsid();
 
-// PUBLIC FUNCTIONS ---------------------------------------------------------------------------------------------------- 
-
-void set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_);
-
-bool set_credentials(String ssid, String password);
-
-void WiFi_manager();
-
-credentials_t* get_credentials();
-
-float getRSSI();
-
-bool getWifiStatus();
-
-bool getWiFiError();
-
-String getSSID();
 
 // ----------------------------------------------------------------------------------------------------
 
 #endif//WIFI_MANAGER_H
-
-
-
-

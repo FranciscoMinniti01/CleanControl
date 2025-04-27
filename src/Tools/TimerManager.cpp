@@ -13,7 +13,7 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-static void IRAM_ATTR timer_callback()
+static void timer_callback()
 {
   portENTER_CRITICAL_ISR(&timerMux);
   for(my_timer_t* t : timers_list)

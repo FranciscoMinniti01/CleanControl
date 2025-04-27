@@ -1,19 +1,21 @@
-// INCLUDES ----------------------------------------------------------------------------------------------------
+// INCLUDES -------------------------------------------------------------------------------------------
 
 #include "WifiManager.h"
 
-// VARIABLES SERVER ----------------------------------------------------------------------------------------------------
+
+// VARIABLES SERVER -----------------------------------------------------------------------------------
 
 WebServer server(80);
 
-// VARIABLES CREDENTIALS ----------------------------------------------------------------------------------------------------
+
+// VARIABLES CREDENTIALS ------------------------------------------------------------------------------
 
 credentials_t  credentials[MAX_CREDENCIALES];
 storage_t credentials_storage[MAX_CREDENCIALES][2];
 
-// VARIABLES WIFI ----------------------------------------------------------------------------------------------------
 
-#define DEBUG_WIFI 1
+// VARIABLES WIFI -------------------------------------------------------------------------------------
+
 WiFiMulti wifiMulti; 
 
 IPAddress local_ip_AP(LOCAL_IP_1, LOCAL_IP_2, LOCAL_IP_3, LOCAL_IP_4);
@@ -25,91 +27,97 @@ static State_AP_t    APState    = WIFI_AP_INIT;
 static State_STA_t   STAState   = WIFI_STA_INIT;
 
 static bool has_wifi_error      = false;            // Inidca si hay un error en las maquinas de estado, si esta en true todas las maquinas se van a deinit
-static bool is_wifi_connected   = false;            // Indica si el dispositivo esta conectado como cliente a una red wifi 
 static bool is_wifi_init        = false;            // Indica que se inicializo la libreria wifi
 static bool is_wifi_AP_init     = false;            // Indica que se inicializo el modo AP
 static bool is_wifi_STA_init    = false;            // Indica que se inicializo el modo STA
 
-// FUNCTIONS SERVER ----------------------------------------------------------------------------------------------------
 
-void set_hdmi_root(String root_ , HTTPMethod request_ , handle_fun fun_)
+// FUNCTIONS SERVER -----------------------------------------------------------------------------------
+
+void SetHdmiRoot(String root_ , HTTPMethod request_ , handle_fun fun_)
 {
   server.on(root_, request_, fun_);
 }
 
-// FUNCTIONS CREDENTIALS ----------------------------------------------------------------------------------------------------
 
-bool register_credentials()
+// FUNCTIONS CREDENTIALS ------------------------------------------------------------------------------
+
+void RegisterCredentials()
 {
-  uint8_t i = 0;
-  bool flag = false;
+  Serial.printf("DEBUG: RegisterCredentials()\n");
   wifiMulti.APlistClean();
-  Serial.printf("DEBUG: register_credentials()\n");
-  for(i=0 ; i<3; i++)
+  for(uint8_t i=0 ; i<MAX_CREDENCIALES ; i++)
   {
-    if (credentials[i].ssid[0] != 0)
+    if(credentials[i].ssid[0] != 0)
     {
-      Serial.printf("INFO: register credential %d\n",i);
-      if (credentials[i].password[0] == 0) Serial.printf("    with empty password\n");
-      if(!wifiMulti.addAP(credentials[i].ssid,credentials[i].password))
-      {
-        Serial.printf("ERROR: add credential %d failed\n",i);
-      }
-      else flag = true;
+      Serial.printf(" INFO: register credential %d\n",i);
+      if(credentials[i].password[0] == 0)  Serial.printf("       with empty password\n");
+      if(!wifiMulti.addAP(credentials[i].ssid,credentials[i].password))  Serial.printf("ERROR: add credential %d failed\n",i);
     }
   }
-  return flag;
 }
 
-void get_storage_credentials()
+void GetStorageCredentials()
 {
+  Serial.printf("DEBUG: GetStorageCredentials()\n");
   bool flag = false;
-  Serial.printf("DEBUG: get_storage_credentials()\n");
   for(uint8_t i = 0; i<MAX_CREDENCIALES; i++)
   {
-    set_storage( &(credentials_storage[i][INDEX_SSID]), 
-                      (void*)credentials[i].ssid,
-                      MAX_LEN_CREDENCIALES,
-                      KEY_CREDENTIAL_SSID + String(i) );
+    set_storage(  &(credentials_storage[i][INDEX_SSID]), 
+                  (void*)credentials[i].ssid,
+                  MAX_LEN_CREDENCIALES,
+                  KEY_CREDENTIAL_SSID + String(i) );
 
-    set_storage( &(credentials_storage[i][INDEX_PASSWORD]), 
-                      (void*)credentials[i].password,
-                      MAX_LEN_CREDENCIALES,
-                      KEY_CREDENTIAL_PASSWORD + String(i) );
+    set_storage(  &(credentials_storage[i][INDEX_PASSWORD]), 
+                  (void*)credentials[i].password,
+                  MAX_LEN_CREDENCIALES,
+                  KEY_CREDENTIAL_PASSWORD + String(i) );
 
-    get_storage(&credentials_storage[i][INDEX_SSID]);
-    get_storage(&credentials_storage[i][INDEX_PASSWORD]);
+    get_storage(  &credentials_storage[i][INDEX_SSID]);
+    get_storage(  &credentials_storage[i][INDEX_PASSWORD]);
     
     if(credentials[i].ssid[0] != 0)
     {
       flag = true;
-      Serial.printf("INFO: Se obtuvieron la credencial %d:\n     ssid=%s\n     password=%s\n",i,credentials[i].ssid ,credentials[i].password);
+      Serial.printf(" INFO: Se obtuvo la credencial %d:\n       ssid = %s\n       password = %s\n", i, credentials[i].ssid, credentials[i].password);
     }
   }
-  if(flag) if(!register_credentials()) Serial.printf("ERROR: can not register credentials\n"); 
+  if(flag) RegisterCredentials(); 
 }
 
-bool set_credentials(String ssid, String password)
+bool SetCredentials(String ssid, String password)
 {
-  Serial.printf("DEBUG: set_credentials()\n");
-  static uint8_t index = -1;
+  Serial.printf("DEBUG: SetCredentials()\n");
 
-  if(ssid.isEmpty())
+  if(ssid.isEmpty() || ssid.length() > MAX_LEN_CREDENCIALES)
   {  
-    Serial.printf("ERROR: can not set empty ssid\n"); 
+    Serial.printf("ERROR: Ssid is empty or too long\n"); 
     return false;
   }
-  if(password.isEmpty()) Serial.printf("Empty password\n"); 
+  if(password.isEmpty()) Serial.printf(" INFO: Set Empty password\n");
+  if(password.length() > MAX_LEN_CREDENCIALES)
+  {
+    Serial.printf("ERROR: Password is too long\n"); 
+    return false;
+  }
 
-  index++;
-  index = index%MAX_CREDENCIALES;
-  Serial.printf("INFO: Indice de la nueva credencial = %d\n",index);
+  static uint8_t index = 0;
+  for(uint8_t i=0 ; i<MAX_CREDENCIALES ; i++)
+  {
+    if(credentials[i].ssid[0] != 0)
+    {
+      index = i;
+      break;
+    }
+  }
+
+  Serial.printf(" INFO: Indice de la nueva credencial = %d\n",index);
 
   strncpy(credentials[index].ssid, ssid.c_str(), MAX_LEN_CREDENCIALES);
-  credentials[index].ssid[MAX_LEN_CREDENCIALES-1] = '\0';
+  credentials[index].ssid[MAX_LEN_CREDENCIALES] = '\0';
 
   strncpy(credentials[index].password, password.c_str(), MAX_LEN_CREDENCIALES);
-  credentials[index].password[MAX_LEN_CREDENCIALES-1] = '\0';
+  credentials[index].password[MAX_LEN_CREDENCIALES] = '\0';
 
   if(!save_storage(&credentials_storage[index][INDEX_SSID]))
   {
@@ -122,17 +130,17 @@ bool set_credentials(String ssid, String password)
     return false;
   }
 
-  if(!register_credentials())
-  {
-    Serial.printf("ERROR: can not register credentials\n"); 
-    return false;
-  }
+  index ++;
+  index = index%MAX_CREDENCIALES;
+  
+  RegisterCredentials();
 
-  Serial.printf("INFO: Configuracion de credenciales\n     ssid=%s \n     password=%s\n",credentials[index].ssid ,credentials[index].password);
+  Serial.printf(" INFO: Configuracion de credenciales\n       ssid = %s\n       password = %s\n",credentials[index].ssid ,credentials[index].password);
   return true;
 }
 
-// FUNCTIONS WIFI ----------------------------------------------------------------------------------------------------
+
+// FUNCTIONS WIFI -------------------------------------------------------------------------------------
 
 void WiFiEvent(WiFiEvent_t event)
 {  
@@ -235,22 +243,12 @@ void WiFiEvent(WiFiEvent_t event)
   }
 }
 
-void WiFi_manager()
-{
-  WiFi_stateMachine();
-  AP_stateMachine();
-  STA_stateMachine();
-
-  if(WiFi.status() == WL_CONNECTED) is_wifi_connected = true;
-  else is_wifi_connected = false;
-}
-
-void WiFi_stateMachine()
+void WifiMachine()
 {
   switch (WifiState)
   {
     case WIFI_INIT:
-      get_storage_credentials();                                                    // Busco credenciales guardadas
+    GetStorageCredentials();                                                    // Busco credenciales guardadas
       WiFi.onEvent(WiFiEvent);                                                      // Configuro la callback de eventos
       if(!WiFi.mode(WIFI_AP_STA))                                                   // Pongo WiFi en modo Access Point y Estacion o cliente
       {
@@ -278,7 +276,7 @@ void WiFi_stateMachine()
   }
 }
 
-void AP_stateMachine()
+void ApMachine()
 {
   switch (APState)
   {
@@ -327,9 +325,10 @@ void AP_stateMachine()
   }
 }
 
-void STA_stateMachine()
+void StaMachine()
 {
   bool STA_flag = false;
+  static uint64_t DeltaTime = get_time_us();
   switch (STAState)
   {
     case WIFI_STA_INIT:
@@ -344,6 +343,12 @@ void STA_stateMachine()
       break;
     
     case WIFI_STA_READY:
+      
+      if(get_delta_time_us(DeltaTime) > 5000)
+      {
+        wifiMulti.run();
+        DeltaTime = get_time_us();
+      }
       wifiMulti.run();
       if(has_wifi_error) STAState = WIFI_STA_DEINIT; 
       break;
@@ -357,17 +362,25 @@ void STA_stateMachine()
   }
 }
 
-// GET FUNCTIONS ----------------------------------------------------------------------------------------------------
+void WifiManager()
+{
+  WifiMachine();
+  ApMachine();
+  StaMachine();
+}
 
-credentials_t* get_credentials() { return credentials; }
 
-float getRSSI() {  return WiFi.RSSI(); }
+// GET FUNCTIONS --------------------------------------------------------------------------------------
 
-bool getWifiStatus() { return is_wifi_connected; }
+credentials_t* GetCredentials() { return credentials; }
 
-bool getWiFiError() { return has_wifi_error; }
+float GetRssi() { return WiFi.RSSI(); }
 
-String getSSID() { return WiFi.SSID(); }
+bool GetWifiStatus() { return (WiFi.status() == WL_CONNECTED); }
+
+bool IsWifiError() { return has_wifi_error; }
+
+String GetSsid() { return WiFi.SSID(); }
+
 
 // ----------------------------------------------------------------------------------------------------
-

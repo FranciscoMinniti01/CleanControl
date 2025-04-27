@@ -48,8 +48,8 @@ void set_timer(my_timer_t* ptr, uint16_t comparator, cb_timer cb);
 void reset_timer(my_timer_t* ptr, uint16_t comparator);
 bool get_flag_timer(my_timer_t* ptr);
 
-uint64_t get_time();
-uint64_t get_delta_time(uint64_t ot);
+uint64_t get_time_us();
+uint64_t get_delta_time_us(uint64_t ot);
 
 // ----------------------------------------------------------------------------------------------------
 

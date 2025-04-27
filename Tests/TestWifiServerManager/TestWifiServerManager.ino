@@ -1,51 +1,57 @@
 #include <Arduino.h>
 #include "../../src/Services/WifiManager.h"
 #include "../../src/Services/WifiManager.cpp"
+#include "../../src/App/ServerManager.cpp"
+#include "../../src/App/ServerManager.h"
 #include "../../src/Tools/Storage.cpp"
 #include "../../src/Tools/TimerManager.cpp"
 
 bool credential_added = false;
 unsigned long last_status_check = 0;
 
-void handleRoot()
+void handleRootInfo()
 {
-  server.send(200, "text/plain", "Bienvenido al Access Point de CleanControl!\nConfiguracion de red disponible.");
+  server.send(200, "text/plain", "Access Point de CleanControl: Configuración disponible en /");
 }
 
 void setup()
 {
   Serial.begin(115200);
+  delay(1000);
+  Serial.println();
+  Serial.println("\n\n\n\n\n\n\n\n\n\n INICIO DE TEST ");
 
-  // Test 1: Inicialización WiFi Manager
-  Serial.println("\n\n\n\n\n\n\n\n\n\nIniciando WifiManager...");
+  // Inicializa el módulo WiFi
+  Serial.println("Iniciando WifiManager...");
   WifiManager();
 
-  // Configurar la ruta HTTP Root para el Access Point
-  Serial.println("Configurando ruta HTTP Root...");
-  SetHdmiRoot("/", HTTP_GET, handleRoot);
+  // Configura las rutas HTTP del servidor
+  Serial.println("Iniciando ServerManager...");
+  ServerManagerInit();
 
-  // Test 2: Recuperar credenciales almacenadas
-  Serial.println("Test 2: Recuperar credenciales almacenadas");
+  // Recuperar credenciales almacenadas
+  Serial.println("Test 1: Recuperar credenciales almacenadas");
   credentials_t* creds = GetCredentials();
   for (int i = 0; i < MAX_CREDENCIALES; i++) {
     Serial.printf("Credencial %d: SSID=%s, PASS=%s\n", i, creds[i].ssid, creds[i].password);
   }
 
-  // Test 3: Agregar una nueva credencial
-  Serial.println("Test 3: Agregar nueva credencial");
-  credential_added = SetCredentials("Claro-hogar", "98769876");
+  // Agregar una nueva credencial
+  Serial.println("Test 2: Agregar nueva credencial");
+  credential_added = SetCredentials("TestSSID", "TestPassword");
   Serial.printf("Resultado agregar credencial: %s\n", credential_added ? "OK" : "FALLO");
 }
 
 void loop()
 {
-  WifiManager(); // Ejecuta las máquinas de estado continuamente
+  WifiManager();
 
   unsigned long now = millis();
-  if (now - last_status_check > 5000) { // Cada 5 segundos
+  if (now - last_status_check > 5000)
+  {
     last_status_check = now;
 
-    Serial.println("\n---- Estado de conexión WiFi ----");
+    Serial.println("---- Estado de conexión WiFi ----");
     Serial.printf("Conectado a WiFi: %s\n", GetWifiStatus() ? "SI" : "NO");
     Serial.printf("Error en WiFi: %s\n", IsWifiError() ? "SI" : "NO");
     Serial.printf("SSID actual: %s\n", GetSsid().c_str());

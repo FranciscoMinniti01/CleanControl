@@ -1,15 +1,17 @@
-// INCLUDES ----------------------------------------------------------------------------------------------------
+// INCLUDES -------------------------------------------------------------------------------------------
 
-#include "server_manager.h"
+#include "ServerManager.h"
 
-// VARIABLES ----------------------------------------------------------------------------------------------------
+
+// VARIABLES ------------------------------------------------------------------------------------------
 
 extern WebServer server;
 
 static user_param_t user_param;
 storage_t storage_param[NUM_SPECIAL_PARAM];
 
-// FUNCTIONS ROOT ----------------------------------------------------------------------------------------------------
+
+// FUNCTIONS ROOT -------------------------------------------------------------------------------------
 
 void FormRoot()
 {
@@ -107,7 +109,7 @@ void FormRoot()
               <h2>WiFi Credentials</h2>
   )rawliteral";
 
-  credentials_t* credentials = get_credentials();
+  credentials_t* credentials = GetCredentials();
 
   for (uint8_t i = 1; i <= MAX_CREDENCIALES; i++)
   {
@@ -195,7 +197,7 @@ void FormSubmitRoot()
       if(server.arg("password"+String(i+1))) Serial.printf("INFO: Credencial %d ingresada\n",i+1);
       else Serial.printf("INFO: Password %d vacia\n",i+1);
 
-      set_credentials(server.arg("ssid"+String(i+1)),server.arg("password"+String(i+1)));
+      SetCredentials(server.arg("ssid"+String(i+1)),server.arg("password"+String(i+1)));
     }
     else Serial.printf("INFO: Ssid %d vacia\n",i+1);       
   }   
@@ -205,7 +207,7 @@ void FormSubmitRoot()
   {
     user_param.machine_id = server.arg("machineid");
     Serial.printf("INFO: Machine ID ingresada: %s\n",user_param.machine_id);
-    if(! seve_data(&storage_param[INDEX_MACHINE_ID])) Serial.println("EROOR: Special param not save");
+    if(! save_storage(&storage_param[INDEX_MACHINE_ID])) Serial.println("EROOR: Special param not save");
   }
   else Serial.printf("INFO: Machine ID vacia\n");
   // --------------------------------------------------
@@ -213,7 +215,7 @@ void FormSubmitRoot()
   {
     user_param.client_id  = server.arg("clientid");
     Serial.printf("INFO: Client ID ingresada: %s\n",user_param.client_id);
-    if(! seve_data(&storage_param[INDEX_CLIENT_ID])) Serial.println("EROOR: Special param not save");
+    if(! save_storage(&storage_param[INDEX_CLIENT_ID])) Serial.println("EROOR: Special param not save");
   }
   else Serial.printf("INFO: Client ID vacia\n");
   // --------------------------------------------------
@@ -221,36 +223,38 @@ void FormSubmitRoot()
   server.send(200, "text/html", html);
 }
 
-// FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-void server_init()
+// FUNCTIONS ------------------------------------------------------------------------------------------
+
+void ServerManagerInit()
 {
   Serial.printf("DEBUG: server_init()\n");
 
   // ROOT --------------------------------------------------
-  set_hdmi_root("/",HTTP_GET,FormRoot);
+  SetHdmiRoot("/",HTTP_GET,FormRoot);
   // --------------------------------------------------
-  set_hdmi_root("/submit",HTTP_POST,FormSubmitRoot);
+  SetHdmiRoot("/submit",HTTP_POST,FormSubmitRoot);
   // --------------------------------------------------
 
   // USER PARAMETERS --------------------------------------------------
-  set_data_storage( &storage_param[INDEX_MACHINE_ID],
+  set_storage( &storage_param[INDEX_MACHINE_ID],
                     (void*)user_param.machine_id.c_str(),
                     sizeof(user_param.machine_id),
                     KEY_SPECIAL_PARAM + String(INDEX_MACHINE_ID) );
-  if(!get_data( &storage_param[INDEX_MACHINE_ID] )) user_param.machine_id = "";
+  if(!get_storage( &storage_param[INDEX_MACHINE_ID] )) user_param.machine_id = "";
   // --------------------------------------------------
-  set_data_storage( &storage_param[INDEX_CLIENT_ID],
+  set_storage( &storage_param[INDEX_CLIENT_ID],
                     (void*)user_param.client_id.c_str(), 
                     sizeof(user_param.client_id),
                     KEY_SPECIAL_PARAM + String(INDEX_CLIENT_ID) );
-  if(!get_data( &storage_param[INDEX_CLIENT_ID] )) user_param.client_id = "";
+  if(!get_storage( &storage_param[INDEX_CLIENT_ID] )) user_param.client_id = "";
   // --------------------------------------------------
 }
 
-user_param_t* get_special_param()
+user_param_t* GetConfigParam()
 { 
   return &user_param;
 }
+
 
 // ----------------------------------------------------------------------------------------------------
