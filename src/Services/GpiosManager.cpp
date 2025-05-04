@@ -1,8 +1,10 @@
-// INCLUDE ----------------------------------------------------------------------------------------------------
+
+// INCLUDE --------------------------------------------------------------------------------------------
 
 #include "gpio_data.h"
 
-// VARIABLES ----------------------------------------------------------------------------------------------------
+
+// VARIABLES ------------------------------------------------------------------------------------------
 
 digital_pin_t digital_pin[NUMBER_OF_DIGITAL_PIN];
 analog_pin_t  analog_pin[NUMBER_OF_ANALOG_PIN];
@@ -10,17 +12,18 @@ analog_pin_t  analog_pin[NUMBER_OF_ANALOG_PIN];
 my_timer_t timer_input;
 my_timer_t timer_save;
 
-// FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-void gpio_data_init()
+// FUNCTIONS ------------------------------------------------------------------------------------------
+
+void GpioInit()
 {
   set_timer(&timer_input, TIME_TO_INPUT, NULL);
   set_timer(&timer_save,  TIME_TO_SAVE, NULL);
 
   // DIGITAL PIN --------------------------------------------------
   digital_pin[0].pin  = DIGITAL_PIN_CERO;
-  //digital_pin[1].pin  = DIGITAL_PIN_UNO;
-  //digital_pin[2].pin  = DIGITAL_PIN_DOS;
+  digital_pin[1].pin  = DIGITAL_PIN_UNO;
+  digital_pin[2].pin  = DIGITAL_PIN_DOS;
   // ANALOG PIN --------------------------------------------------
   analog_pin[0].pin   = ANALOG_PIN_CERO;
   // --------------------------------------------------
@@ -121,7 +124,7 @@ bool save_data_control()
   return true;
 }
 
-void gpio_data_control()
+void GpioManager()
 {
   if(get_flag_timer(&timer_input))
   {
@@ -134,9 +137,10 @@ void gpio_data_control()
   }
 }
 
-// FUNCTIONS GET ----------------------------------------------------------------------------------------------------
 
-digital_pin_t* get_digital_pin(uint8_t pin)
+// GET FUNCTIONS --------------------------------------------------------------------------------------
+
+digital_pin_t* GetDigitalGpio(uint8_t pin)
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
@@ -145,7 +149,7 @@ digital_pin_t* get_digital_pin(uint8_t pin)
   return NULL;
 }
 
-analog_pin_t* get_analog_pin(uint8_t pin)
+analog_pin_t* GetAnalogGpio(uint8_t pin)
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
@@ -153,6 +157,7 @@ analog_pin_t* get_analog_pin(uint8_t pin)
   }
   return 0;
 }
+
 
 // ----------------------------------------------------------------------------------------------------
 

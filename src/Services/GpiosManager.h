@@ -1,7 +1,7 @@
 #ifndef GPIO_DATA_H
 #define GPIO_DATA_H
 
-// INCLUDE ----------------------------------------------------------------------------------------------------
+// INCLUDE --------------------------------------------------------------------------------------------
 
 #include "Print.h"
 #include "HardwareSerial.h"
@@ -12,29 +12,32 @@
 #include "my_timer.h"
 #include "storage.h"
 
-// GPIO DATA CONFIG ----------------------------------------------------------------------------------------------------
+
+// GPIO DATA CONFIG -----------------------------------------------------------------------------------
 
 // DIGITAL PIN --------------------------------------------------
-#define NUMBER_OF_DIGITAL_PIN 1
-#define DIGITAL_PIN_CERO      15
-#define DIGITAL_PIN_UNO       16
-#define DIGITAL_PIN_DOS       17
+#define NUMBER_OF_DIGITAL_PIN   1
+#define DIGITAL_PIN_CERO        15
+#define DIGITAL_PIN_UNO         16
+#define DIGITAL_PIN_DOS         17
 // ANALOG PIN --------------------------------------------------
-#define NUMBER_OF_ANALOG_PIN  1
-#define ANALOG_PIN_CERO       10
+#define NUMBER_OF_ANALOG_PIN    1
+#define ANALOG_PIN_CERO         10
 // --------------------------------------------------
 
-#define TIME_TO_INPUT         TIME_10mS
-#define TIME_TO_SAVE          TIME_60S
-#define COUNTER_COMPARATOR    10
+#define TIME_TO_INPUT           TIME_10mS
+#define TIME_TO_SAVE            TIME_60S
+#define COUNTER_COMPARATOR      10
 
-// DEFINES ----------------------------------------------------------------------------------------------------
 
-#define KEY_DIGTAL_TIME_ON    "DA"
-#define KEY_DIGTAL_TIME_OFF   "DD"
-#define KEY_ANALOG_AVERAGE    "A"
+// DEFINES --------------------------------------------------------------------------------------------
 
-// VARIABLES ----------------------------------------------------------------------------------------------------
+#define KEY_DIGTAL_TIME_ON      "DA"
+#define KEY_DIGTAL_TIME_OFF     "DD"
+#define KEY_ANALOG_AVERAGE      "A"
+
+
+// VARIABLES ------------------------------------------------------------------------------------------
 
 typedef struct 
 {
@@ -54,12 +57,14 @@ typedef struct
   storage_t average_storage;
 } analog_pin_t;
 
-// FUNCTIONS ----------------------------------------------------------------------------------------------------
 
-void gpio_data_init();
-void gpio_data_control();
-digital_pin_t* get_digital_pin(uint8_t pin);
-analog_pin_t* get_analog_pin(uint8_t pin);
+// FUNCTIONS ------------------------------------------------------------------------------------------
+
+void GpioInit();
+void GpioManager();
+digital_pin_t* GetDigitalGpio(uint8_t pin);
+analog_pin_t* GetAnalogGpio(uint8_t pin);
+
 
 // ----------------------------------------------------------------------------------------------------
 
