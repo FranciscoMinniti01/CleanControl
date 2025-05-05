@@ -88,31 +88,32 @@ void digital_data_control()
 
 void analog_data_control()
 {
-  static uint8_t  analog_read_counter = 0;
-  static uint8_t  analog_read_index   = 0;
-  static uint16_t auxiliar_Average    = 0;
-  static bool  auxiliar_analog_flag   = false;
-
-  if(analog_read_counter >= COUNTER_COMPARATOR)
+  for (uint8_t i = 0; i < NUMBER_OF_ANALOG_PIN; i++)
   {
-    for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
-    {
-      analog_pin[i].values[analog_read_index] = analogRead(analog_pin[i].pin);
-      for(uint16_t j : analog_pin[i].values) auxiliar_Average += analog_pin[i].values[j];
-      if(auxiliar_analog_flag) analog_pin[i].average = auxiliar_Average/COUNTER_COMPARATOR;
-    }
-    analog_read_index++;
+    uint16_t new_value = analogRead(analog_pin[i].pin);
+    uint8_t  idx       = analog_pin[i].index;
 
-    if(analog_read_index >= COUNTER_COMPARATOR)
-    {
-      auxiliar_analog_flag = true;
-      analog_read_index    = 0;
-    }
+    // Sustraer valor viejo de la suma
+    analog_pin[i].sum -= analog_pin[i].values[idx];
 
-    analog_read_counter = 0;
+    // Insertar nuevo valor
+    analog_pin[i].values[idx] = new_value;
+
+    // Sumar nuevo valor
+    analog_pin[i].sum += new_value;
+
+    // Avanzar el índice circular
+    analog_pin[i].index = (idx + 1) % COUNTER_COMPARATOR;
+
+    // Contar hasta el máximo
+    if (analog_pin[i].count < COUNTER_COMPARATOR)
+      analog_pin[i].count++;
+
+    // Calcular promedio
+    analog_pin[i].average = analog_pin[i].sum / analog_pin[i].count;
   }
-  else analog_read_counter++;
 }
+
 
 bool save_data_control()
 {

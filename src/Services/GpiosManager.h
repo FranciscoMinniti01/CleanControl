@@ -53,6 +53,9 @@ typedef struct
 {
   uint8_t   pin;
   uint16_t  values[COUNTER_COMPARATOR];
+  uint32_t  sum;
+  uint8_t   index;
+  uint8_t   count;
   uint16_t  average;
   storage_t average_storage;
 } analog_pin_t;
