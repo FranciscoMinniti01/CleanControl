@@ -1,7 +1,7 @@
 
 // INCLUDE --------------------------------------------------------------------------------------------
 
-#include "gpio_data.h"
+#include "../../src/Services/GpiosManager.h"
 
 
 // VARIABLES ------------------------------------------------------------------------------------------
@@ -32,28 +32,28 @@ void GpioInit()
   {
     pinMode(digital_pin[i].pin,INPUT);
 
-    set_data_storage( &(digital_pin[i].total_time_storage[0]),
+    set_storage( &(digital_pin[i].total_time_storage[0]),
                       (void*)&(digital_pin[i].total_time_state[0]),
                       sizeof(digital_pin[i].total_time_state[0]),
                       KEY_DIGTAL_TIME_ON + String(i)  );
 
-    set_data_storage( &(digital_pin[i].total_time_storage[1]),
+    set_storage( &(digital_pin[i].total_time_storage[1]),
                       (void*)&(digital_pin[i].total_time_state[1]),
                       sizeof(digital_pin[i].total_time_state[1]),
                       KEY_DIGTAL_TIME_OFF + String(i)  );
 
-    get_data( &(digital_pin[i].total_time_storage[0]) );
-    get_data( &(digital_pin[i].total_time_storage[1]) );
+    get_storage( &(digital_pin[i].total_time_storage[0]) );
+    get_storage( &(digital_pin[i].total_time_storage[1]) );
   }
 
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
-    set_data_storage( &(analog_pin[i].average_storage),
+    set_storage( &(analog_pin[i].average_storage),
                       (void*)&(analog_pin[i].average),
                       sizeof(analog_pin[i].average),
                       KEY_ANALOG_AVERAGE + String(i)  );
 
-    get_data( &(analog_pin[i].average_storage) );
+    get_storage( &(analog_pin[i].average_storage) );
   }
 }
 
@@ -65,11 +65,15 @@ void digital_data_control()
   {
     auxiliar_digital_state = digitalRead(digital_pin[i].pin);
 
+    //Serial.println("ACA 2");
+
     if(auxiliar_digital_state != digital_pin[i].state)
     {
+      //Serial.println("ACA 3");
       digital_pin[i].counter ++;
       if(digital_pin[i].counter >= COUNTER_COMPARATOR)
       {
+        //Serial.println("ACA 4");
         digital_pin[i].state    = auxiliar_digital_state;
         digital_pin[i].time_state[digital_pin[i].state] = 0;
         digital_pin[i].counter  = 0;
@@ -114,12 +118,12 @@ bool save_data_control()
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
-    if(!seve_data( &(digital_pin[i].total_time_storage[0]) )) return false;
-    if(!seve_data( &(digital_pin[i].total_time_storage[1]) )) return false;
+    if(!save_storage( &(digital_pin[i].total_time_storage[0]) )) return false;
+    if(!save_storage( &(digital_pin[i].total_time_storage[1]) )) return false;
   }
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
-    if(!seve_data( &(analog_pin[i].average_storage) )) return false;
+    if(!save_storage( &(analog_pin[i].average_storage) )) return false;
   }
   return true;
 }
@@ -128,6 +132,7 @@ void GpioManager()
 {
   if(get_flag_timer(&timer_input))
   {
+    //Serial.println("ACA 1");
     digital_data_control();
     analog_data_control();
   }

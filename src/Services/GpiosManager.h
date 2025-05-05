@@ -9,14 +9,14 @@
 #include "esp32-hal-gpio.h"
 #include "esp32-hal-adc.h"
 
-#include "my_timer.h"
-#include "storage.h"
+#include "../../src/Tools/TimerManager.h"
+#include "../../src/Tools/Storage.h"
 
 
 // GPIO DATA CONFIG -----------------------------------------------------------------------------------
 
 // DIGITAL PIN --------------------------------------------------
-#define NUMBER_OF_DIGITAL_PIN   1
+#define NUMBER_OF_DIGITAL_PIN   3
 #define DIGITAL_PIN_CERO        15
 #define DIGITAL_PIN_UNO         16
 #define DIGITAL_PIN_DOS         17

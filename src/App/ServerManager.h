@@ -30,7 +30,7 @@ typedef struct {
 
 // FUNCTIONS ------------------------------------------------------------------------------------------ 
 
-void ServerManagerInit();
+void ServerInit();
 user_param_t* GetConfigParam();
 
 

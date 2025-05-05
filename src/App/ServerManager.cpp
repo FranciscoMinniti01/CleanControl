@@ -226,7 +226,7 @@ void FormSubmitRoot()
 
 // FUNCTIONS ------------------------------------------------------------------------------------------
 
-void ServerManagerInit()
+void ServerInit()
 {
   Serial.printf("DEBUG: server_init()\n");
 
