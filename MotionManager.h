@@ -10,6 +10,7 @@
 
 #include "src/Tools/TimerManager.h"
 
+
 // CONFIG ----------------------------------------------------------------------------------------------------
 
 #define ENABLE_VERTICAL_AXIS_X
@@ -41,6 +42,7 @@
 #define CONFIG_ACCELERATION_THRESHOLD         0.5f
 #define CONFIG_SPEED_THRESHOLD                0.15f
 
+
 // DEFINES ----------------------------------------------------------------------------------------------------
 
 #define KEY_DISTAN_A  "KDA"
@@ -50,6 +52,7 @@
 #define X 0
 #define Y 1
 #define Z 2
+
 
 // STRUCTURES - TYPEDEF ----------------------------------------------------------------------------------------------------
 
@@ -75,11 +78,13 @@ typedef struct {
   uint64_t      ActiveTime;
 } MotionInfo_t;
 
+
 // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
 bool MotionInit();
 void MotionControl();
 MotionInfo_t* GetMotionInfo();
+
 
 // ----------------------------------------------------------------------------------------------------
 
