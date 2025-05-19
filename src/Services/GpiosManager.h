@@ -36,6 +36,14 @@ uint8_t AnalogPinConfig[NUMBER_OF_ANALOG_PIN] = {10};
 #define KEY_DIGTAL_TIME_OFF     "DD"
 #define KEY_ANALOG_AVERAGE      "A"
 
+enum DigitalValues_t
+{
+  STATE,
+  TIME_ON,
+  TIME_OFF,
+  TOTAL_TIME_ON,
+  TOTAL_TIME_OFF
+};
 
 // VARIABLES ------------------------------------------------------------------------------------------
 
@@ -65,8 +73,8 @@ typedef struct
 
 void GpioInit();
 void GpioManager();
-DigitalPin_t* GetDigitalGpio(uint8_t Pin);
-AnalogPin_t* GetAnalogGpio(uint8_t Pin);
+uint32_t GetDigitalValues(uint8_t Pin, uint8_t Value);
+uint16_t GetAnalogAverage(uint8_t Pin)
 
 
 // ----------------------------------------------------------------------------------------------------

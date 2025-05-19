@@ -126,20 +126,44 @@ void GpioManager()
 
 // GET FUNCTIONS --------------------------------------------------------------------------------------
 
-DigitalPin_t* GetDigitalGpio(uint8_t Pin)
+uint32_t GetDigitalValues(uint8_t Pin, uint8_t Value);
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
-    if(Pin == DigitalPin[i].Pin) return &DigitalPin[i];
+    if(Pin == DigitalPin[i].Pin)
+    {
+      switch(Value)
+      {
+        case STATE:
+          return (uint32_t)DigitalPin[i].state; 
+          break;
+
+        case TIME_ON:
+          return DigitalPin[i].time_state[1]; 
+          break;
+        
+        case TIME_OFF:
+          return DigitalPin[i].time_state[0]; 
+          break;
+
+        case TOTAL_TIME_ON:
+          return DigitalPin[i].total_time_state[1]; 
+          break;
+        
+        case TOTAL_TIME_OFF:
+          return DigitalPin[i].total_time_state[0];
+          break;
+      }
+    }
   }
   return NULL;
 }
 
-AnalogPin_t* GetAnalogGpio(uint8_t Pin)
+uint16_t GetAnalogAverage(uint8_t Pin)
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
-    if(Pin == AnalogPin[i].pin) return &AnalogPin[i];
+    if(Pin == AnalogPin[i].pin) return AnalogPin[i].average;
   }
   return 0;
 }
