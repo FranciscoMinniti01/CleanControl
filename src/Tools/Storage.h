@@ -9,6 +9,16 @@
 
 #define NAME_SPACE "storage"
 
+#define SET_STORAGE(s,d,k) \
+  set_storage(&(s), (void*)&(d), sizeof(d), k);
+
+#define GET_STORAGE(s) \
+  get_storage(&(s));
+
+#define SEVE_STORAGE(s) \
+  save_storage(&(s));
+
+
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
 typedef struct
