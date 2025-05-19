@@ -17,12 +17,12 @@
 
 // DIGITAL PIN --------------------------------------------------
 #define NUMBER_OF_DIGITAL_PIN   3
-#define DIGITAL_PIN_CERO        15
-#define DIGITAL_PIN_UNO         16
-#define DIGITAL_PIN_DOS         17
+uint8_t DigitalPinConfig[NUMBER_OF_DIGITAL_PIN] = {15,16,17};
+
 // ANALOG PIN --------------------------------------------------
 #define NUMBER_OF_ANALOG_PIN    1
-#define ANALOG_PIN_CERO         10
+uint8_t AnalogPinConfig[NUMBER_OF_ANALOG_PIN] = {10};
+
 // --------------------------------------------------
 
 #define TIME_TO_INPUT           TIME_10mS
@@ -41,32 +41,32 @@
 
 typedef struct 
 {
-  uint8_t   pin;
-  uint8_t   counter;
-  bool      state;
-  uint16_t  time_state[2];
-  uint16_t  total_time_state[2];
-  storage_t total_time_storage[2];
-} digital_pin_t;
+  uint8_t   Pin;
+  uint8_t   Counter;
+  bool      State;
+  uint32_t  TimeState[2];
+  uint32_t  TotalTimeState[2];
+  storage_t TotalTimeStorage[2];
+} DigitalPin_t;
 
 typedef struct
 {
-  uint8_t   pin;
-  uint16_t  values[COUNTER_COMPARATOR];
-  uint32_t  sum;
-  uint8_t   index;
-  uint8_t   count;
-  uint16_t  average;
-  storage_t average_storage;
-} analog_pin_t;
+  uint8_t   Pin;
+  uint16_t  Samples[COUNTER_COMPARATOR];
+  uint32_t  Sum;
+  uint8_t   Index;
+  uint8_t   Count;
+  uint16_t  Average;
+  storage_t AverageStorage;
+} AnalogPin_t;
 
 
 // FUNCTIONS ------------------------------------------------------------------------------------------
 
 void GpioInit();
 void GpioManager();
-digital_pin_t* GetDigitalGpio(uint8_t pin);
-analog_pin_t* GetAnalogGpio(uint8_t pin);
+DigitalPin_t* GetDigitalGpio(uint8_t Pin);
+AnalogPin_t* GetAnalogGpio(uint8_t Pin);
 
 
 // ----------------------------------------------------------------------------------------------------
