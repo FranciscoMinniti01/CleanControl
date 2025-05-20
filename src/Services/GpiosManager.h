@@ -17,11 +17,12 @@
 
 // DIGITAL PIN --------------------------------------------------
 #define NUMBER_OF_DIGITAL_PIN   3
-uint8_t DigitalPinConfig[NUMBER_OF_DIGITAL_PIN] = {15,16,17};
+static uint8_t ModuleDigitalPinConfig[NUMBER_OF_DIGITAL_PIN] = {15,16,17};
+//inline uint8_t ModuleDigitalPinConfig[NUMBER_OF_DIGITAL_PIN] = {15,16,17};
 
 // ANALOG PIN --------------------------------------------------
 #define NUMBER_OF_ANALOG_PIN    1
-uint8_t AnalogPinConfig[NUMBER_OF_ANALOG_PIN] = {10};
+static uint8_t ModuleAnalogPinConfig[NUMBER_OF_ANALOG_PIN] = {10};
 
 // --------------------------------------------------
 
@@ -74,7 +75,7 @@ typedef struct
 void GpioInit();
 void GpioManager();
 uint32_t GetDigitalValues(uint8_t Pin, uint8_t Value);
-uint16_t GetAnalogAverage(uint8_t Pin)
+uint16_t GetAnalogAverage(uint8_t Pin);
 
 
 // ----------------------------------------------------------------------------------------------------

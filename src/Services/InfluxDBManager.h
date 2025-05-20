@@ -9,32 +9,32 @@
 #include <InfluxDbClient.h>
 #include <InfluxDbCloud.h>
 
-#include "my_timer.h"
+#include "../../src/Tools/TimerManager.h"
 
 
 // FUNCTIONS POINT ----------------------------------------------------------------------------------------------------
 
-void set_Point( String mensurement );
+void SetPoint( String mensurement );
 
-void add_Tag( String tag, String value_tag );
+void AddTag( String tag, String value_tag );
 
-void add_Field( String field, String value );
-void add_Field( String field, bool value );
-void add_Field( String field, float value );
-void add_Field( String field, uint32_t value );
-void add_Field( String field, uint16_t value );
-void add_Field( String field, uint8_t value );
+void AddField( String field, String value );
+void AddField( String field, bool value );
+void AddField( String field, float value );
+void AddField( String field, uint32_t value );
+void AddField( String field, uint16_t value );
+void AddField( String field, uint8_t value );
 
-bool white_Point();
+bool WhitePoint();
 
-void delete_Point();
+void DeletePoint();
 
 
 // FUNCTIONS INFLUXDB ----------------------------------------------------------------------------------------------------
 
-void influx_init(const char* url, const char* org, const char* bucket, const char* token, const char* cert, const char* tz);
-bool influx_connection();
-bool influx_is_connected();
+void InfluxInit(const char* url, const char* org, const char* bucket, const char* token, const char* cert, const char* tz);
+bool InfluxConnection();
+bool InfluxIsConnected();
 
 
 // ----------------------------------------------------------------------------------------------------

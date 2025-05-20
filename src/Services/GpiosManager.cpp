@@ -22,7 +22,7 @@ void GpioInit()
 
   for(uint8_t i = 0 ; i < NUMBER_OF_DIGITAL_PIN ; i++)
   {
-    DigitalPin[i].Pin = DigitalPinConfig[i];
+    DigitalPin[i].Pin = ModuleDigitalPinConfig[i];
 
     pinMode(DigitalPin[i].Pin, INPUT);
 
@@ -41,7 +41,7 @@ void GpioInit()
 
   for(uint8_t i = 0 ; i < NUMBER_OF_ANALOG_PIN ; i++)
   {
-    AnalogPin[i].Pin = AnalogPinConfig[i];
+    AnalogPin[i].Pin = ModuleAnalogPinConfig[i];
 
     SET_STORAGE(  AnalogPin[i].AverageStorage,
                   AnalogPin[i].Average,
@@ -80,19 +80,19 @@ void AnalogDataControl()
 {
   for (uint8_t i = 0; i < NUMBER_OF_ANALOG_PIN; i++)
   {
-    uint16_t new_value = analogRead(AnalogPin[i].pin);
-    uint8_t  idx       = AnalogPin[i].index;
+    uint16_t new_value = analogRead(AnalogPin[i].Pin);
+    uint8_t  idx       = AnalogPin[i].Index;
 
-    AnalogPin[i].sum -= AnalogPin[i].values[idx];
+    AnalogPin[i].Sum -= AnalogPin[i].Samples[idx];
 
-    AnalogPin[i].values[idx] = new_value;
-    AnalogPin[i].sum += new_value;
+    AnalogPin[i].Samples[idx] = new_value;
+    AnalogPin[i].Sum += new_value;
 
-    AnalogPin[i].index = (idx + 1) % COUNTER_COMPARATOR;
+    AnalogPin[i].Index = (idx + 1) % COUNTER_COMPARATOR;
 
-    if (AnalogPin[i].count < COUNTER_COMPARATOR) AnalogPin[i].count++;
+    if (AnalogPin[i].Count < COUNTER_COMPARATOR) AnalogPin[i].Count++;
 
-    AnalogPin[i].average = AnalogPin[i].sum / AnalogPin[i].count;
+    AnalogPin[i].Average = AnalogPin[i].Sum / AnalogPin[i].Count;
   }
 }
 
@@ -100,12 +100,12 @@ bool SaveData()
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
-    if(!save_storage( &(DigitalPin[i].total_time_storage[0]) )) return false;
-    if(!save_storage( &(DigitalPin[i].total_time_storage[1]) )) return false;
+    if(!save_storage( &(DigitalPin[i].TotalTimeStorage[0]) )) return false;
+    if(!save_storage( &(DigitalPin[i].TotalTimeStorage[1]) )) return false;
   }
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
-    if(!save_storage( &(AnalogPin[i].average_storage) )) return false;
+    if(!save_storage( &(AnalogPin[i].AverageStorage) )) return false;
   }
   return true;
 }
@@ -126,7 +126,7 @@ void GpioManager()
 
 // GET FUNCTIONS --------------------------------------------------------------------------------------
 
-uint32_t GetDigitalValues(uint8_t Pin, uint8_t Value);
+uint32_t GetDigitalValues(uint8_t Pin, uint8_t Value)
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_DIGITAL_PIN ; i++)
   {
@@ -135,23 +135,23 @@ uint32_t GetDigitalValues(uint8_t Pin, uint8_t Value);
       switch(Value)
       {
         case STATE:
-          return (uint32_t)DigitalPin[i].state; 
+          return (uint32_t)DigitalPin[i].State; 
           break;
 
         case TIME_ON:
-          return DigitalPin[i].time_state[1]; 
+          return DigitalPin[i].TimeState[1]; 
           break;
         
         case TIME_OFF:
-          return DigitalPin[i].time_state[0]; 
+          return DigitalPin[i].TimeState[0]; 
           break;
 
         case TOTAL_TIME_ON:
-          return DigitalPin[i].total_time_state[1]; 
+          return DigitalPin[i].TotalTimeState[1]; 
           break;
         
         case TOTAL_TIME_OFF:
-          return DigitalPin[i].total_time_state[0];
+          return DigitalPin[i].TotalTimeState[0];
           break;
       }
     }
@@ -163,7 +163,7 @@ uint16_t GetAnalogAverage(uint8_t Pin)
 {
   for(uint8_t i = 0 ; i<NUMBER_OF_ANALOG_PIN ; i++)
   {
-    if(Pin == AnalogPin[i].pin) return AnalogPin[i].average;
+    if(Pin == AnalogPin[i].Pin) return AnalogPin[i].Average;
   }
   return 0;
 }

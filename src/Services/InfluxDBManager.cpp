@@ -1,86 +1,86 @@
 // INCLUDES ----------------------------------------------------------------------------------------------------
 
-#include "influxdb_client.h"
+#include "../../src/Services/InfluxDBManager.h"
 
 
 // VARIABLES ----------------------------------------------------------------------------------------------------
 
-InfluxDBClient*     client = NULL;
-Point*              ptr_point = NULL;
-static const char*  time_zone;
+InfluxDBClient*     Client = NULL;
+Point*              PtrPoint = NULL;
+static const char*  TimeZone;
 
 
 // FUNCTIONS POINT ----------------------------------------------------------------------------------------------------
 
-void set_Point( String mensurement )
+void SetPoint( String mensurement )
 { 
-  if(ptr_point != NULL) delete_Point();
-  ptr_point = new Point(mensurement.c_str());
-  ptr_point->clearFields(); 
-  ptr_point->clearTags(); 
+  if(PtrPoint != NULL) DeletePoint();
+  PtrPoint = new Point(mensurement.c_str());
+  PtrPoint->clearFields(); 
+  PtrPoint->clearTags(); 
 }
 
-void add_Tag( String tag, String value_tag ) { if(ptr_point != NULL) ptr_point->addTag( tag.c_str(), value_tag.c_str() ); }
+void AddTag( String tag, String value_tag ) { if(PtrPoint != NULL) PtrPoint->addTag( tag.c_str(), value_tag.c_str() ); }
 
-void add_Field( String field, String value )    { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value.c_str() ); }
-void add_Field( String field, bool value )      { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
-void add_Field( String field, float value )     { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
-void add_Field( String field, uint32_t value )  { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
-void add_Field( String field, uint16_t value )  { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
-void add_Field( String field, uint8_t value )   { if(ptr_point != NULL) ptr_point->addField( field.c_str() , value ); }
+void AddField( String field, String value )    { if(PtrPoint != NULL) PtrPoint->addField( field.c_str() , value.c_str() ); }
+void AddField( String field, bool value )      { if(PtrPoint != NULL) PtrPoint->addField( field.c_str() , value ); }
+void AddField( String field, float value )     { if(PtrPoint != NULL) PtrPoint->addField( field.c_str() , value ); }
+void AddField( String field, uint32_t value )  { if(PtrPoint != NULL) PtrPoint->addField( field.c_str() , value ); }
+void AddField( String field, uint16_t value )  { if(PtrPoint != NULL) PtrPoint->addField( field.c_str() , value ); }
+void AddField( String field, uint8_t value )   { if(PtrPoint != NULL) PtrPoint->addField( field.c_str() , value ); }
 
-bool white_Point()
+bool WhitePoint()
 {
-  if(client == NULL)    return false;
-  if(ptr_point == NULL) return false;
-  if ( !client->writePoint( *ptr_point ) )
+  if(Client == NULL)  return false;
+  if(PtrPoint == NULL)   return false;
+  if ( !Client->writePoint( *PtrPoint ) )
   {
     Serial.print("ERROR: InfluxDB write failed:\n     ");
-    Serial.println(client->getLastErrorMessage());
-    delete_Point();
+    Serial.println(Client->getLastErrorMessage());
+    DeletePoint();
     return false;
   }
-  delete_Point();
+  DeletePoint();
   return true;
 }
 
-void delete_Point()
+void DeletePoint()
 { 
-  delete ptr_point;
-  ptr_point = NULL;
+  delete PtrPoint;
+  PtrPoint = NULL;
 }
 
 
 // FUNCTIONS INFLUXDB ----------------------------------------------------------------------------------------------------
 
-void influx_init(const char* url, const char* org, const char* bucket, const char* token, const char* cert, const char* tz)
+void InfluxInit(const char* url, const char* org, const char* bucket, const char* token, const char* cert, const char* tz)
 {
-  client    = new InfluxDBClient(url, org, bucket, token, cert);
-  time_zone = tz;
+  Client   = new InfluxDBClient(url, org, bucket, token, cert);
+  TimeZone = tz;
 }
 
-bool influx_connection()
+bool InfluxConnection()
 {
-  if(client == NULL) return false;
-  timeSync(time_zone, "pool.ntp.org", "time.nis.gov");
-  if (client->validateConnection())
+  if(Client == NULL) return false;
+  timeSync(TimeZone, "pool.ntp.org", "time.nis.gov");
+  if (Client->validateConnection())
   {
     Serial.print("INFO: Connected to InfluxDB:\n     ");
-    Serial.println(client->getServerUrl());
+    Serial.println(Client->getServerUrl());
     return true;
   }
   else
   {
     Serial.print("ERROR: InfluxDB connection failed:\n     ");
-    Serial.println(client->getLastErrorMessage());
+    Serial.println(Client->getLastErrorMessage());
     return false;
   }
 }
 
-bool influx_is_connected()
+bool InfluxIsConnected()
 {
-  if(client == NULL) return false;
-  if(client->validateConnection()) return true;
+  if(Client == NULL) return false;
+  if(Client->validateConnection()) return true;
   else return false;
 }
 
