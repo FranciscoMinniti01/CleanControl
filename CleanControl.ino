@@ -71,8 +71,8 @@ void WhiteSpecificMotor(String Motor, uint8_t Pin)
   AddField(F_D_MOTOR_TTON,   GetDigitalValues(Pin, TOTAL_TIME_ON));
   AddField(F_D_MOTOR_TTOFF,  GetDigitalValues(Pin, TOTAL_TIME_OFF));
 
-  if ( !WhitePoint() ) Serial.print("ERROR: %s data can't sent\n", Motor);
-  else Serial.print("INFO: %s data sent\n", Motor);
+  if ( !WhitePoint() ) Serial.printf("ERROR: %s data can't sent\n", Motor);
+  else Serial.printf("INFO: %s data sent\n", Motor);
 }
 
 void WhiteMotor()
